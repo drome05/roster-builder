@@ -6,7 +6,7 @@ A browser-based roster building tool for Valorant Draft Circuit (and similar lea
 
 ## Getting Started
 
-Download `index.html`, open it in any browser (or use drome., and start in the **Setup** tab. The other tabs are hidden until you hit **Apply & Build**.
+[Open this link](https://drome05.github.io/roster-builder/), and start in the **Setup** tab. The other tabs are hidden until you hit **Apply & Build**.
 
 ---
 
