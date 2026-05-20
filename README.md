@@ -1,6 +1,6 @@
 # VDC Roster Builder
 
-A browser-based roster building tool for Valorant Draft Circuit (and similar leagues). No installs, no account, no backend - just download and open the file.
+A browser-based roster building tool for Valorant Draft Circuit. No installs.
 
 ---
 
