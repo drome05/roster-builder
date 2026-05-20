@@ -860,11 +860,11 @@
         </div>
         <div class="cfg-field" style="flex: 0 0 140px">
           <span class="cfg-label">MMR Cap</span>
-          <input class="cfg-input" id="cfg-cap" type="number" value="820" min="1">
+          <input class="cfg-input" id="cfg-cap" type="number" min="1" placeholder="820">
         </div>
         <div class="cfg-field" style="flex: 0 0 110px">
           <span class="cfg-label">Roster Size</span>
-          <input class="cfg-input" id="cfg-size" type="number" value="5" min="2" max="15" placeholder="5">
+          <input class="cfg-input" id="cfg-size" type="number" min="2" max="10" placeholder="5">
         </div>
       </div>
     </div>
@@ -908,7 +908,7 @@
         </div>
         <div class="cfg-field" style="flex: 0 0 130px">
           <span class="cfg-label">Promo Player MMR</span>
-          <input class="cfg-input" id="promo-mmr-input" type="number" value="145" min="1"
+          <input class="cfg-input" id="promo-mmr-input" type="number" min="1" placeholder="145"
                  onkeydown="if(event.key==='Enter') addPromoPlayer()">
         </div>
         <div class="cfg-field" style="flex: 0 0 auto; justify-content: flex-end">
@@ -1731,9 +1731,9 @@ function confirmPending() { confirmAllPending(); }
 function getSetupValues() {
   return {
     tierName:   document.getElementById('cfg-tier').value.trim(),
-    cap:        parseInt(document.getElementById('cfg-cap').value)  || 820,
+    cap:        parseInt(document.getElementById('cfg-cap').value)  || 0,
     rosterSize: parseInt(document.getElementById('cfg-size').value) || 5,
-    bdeMmr:     145,
+    bdeMmr:     parseInt(document.getElementById('promo-mmr-input')?.value) || 145,
   };
 }
 
