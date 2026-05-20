@@ -15,12 +15,12 @@ A browser-based roster building tool for Valorant Draft Circuit (and similar lea
 Everything starts here. Fill this out once before you do anything else.
 
 ### Tier Config
-- **Tier name** - whatever you want to call this roster (e.g. Apprentice, Masters)
+- **Tier name** - whatever you want to call this roster (e.g. Apprentice, Mythic)
 - **MMR Cap** - the maximum total MMR allowed for a 5-player roster
 - **Roster size** - defaults to 5, adjust if your tier is different
 
 ### Promo Lower Tier
-Add a ghost "Promo Player" slot for a player being promoted from a lower tier. Give them a name, a role, and the MMR they count at in your tier. They'll show up as a selectable card in the Builder just like any real player.
+Add a "Promo Player" slot for a player being promoted from a lower tier. Give them a name, a role, and the MMR they count at in your tier. They'll show up as a selectable card in the Builder just like any real player.
 
 ### Adding Players
 
