@@ -1,0 +1,2444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roster Builder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    /* ─── DESIGN TOKENS ─────────────────────────────────────── */
+    :root {
+      --red:      #E03030;
+      --red-dim:  rgba(224, 48, 48, 0.12);
+      --red-mid:  rgba(224, 48, 48, 0.25);
+      --dark:     #0C0C0C;
+      --dark2:    #141414;
+      --dark3:    #1C1C1C;
+      --dark4:    #222222;
+      --border:   rgba(255, 255, 255, 0.07);
+      --border2:  rgba(255, 255, 255, 0.12);
+      --text:     #F0EDE8;
+      --muted:    #888070;
+      --gold:     #C9A84C;
+      --gold-dim: rgba(201, 168, 76, 0.12);
+      --gold-mid: rgba(201, 168, 76, 0.3);
+      --green:    #4A8A4A;
+      --red-err:  #C07070;
+    }
+
+    /* ─── LIGHT MODE ────────────────────────────────────────── */
+    body.light {
+      --dark:     #F4F2EF;
+      --dark2:    #ECEAE6;
+      --dark3:    #E2DFD9;
+      --dark4:    #D8D4CE;
+      --border:   rgba(0, 0, 0, 0.08);
+      --border2:  rgba(0, 0, 0, 0.14);
+      --text:     #1A1714;
+      --muted:    #7A7060;
+      --gold:     #A07820;
+      --gold-dim: rgba(160, 120, 32, 0.1);
+      --gold-mid: rgba(160, 120, 32, 0.28);
+      --green:    #2E6E2E;
+      --red-err:  #A03030;
+    }
+
+    /* ─── THEME TOGGLE ──────────────────────────────────────── */
+    .theme-toggle {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--dark2);
+      font-size: 11px;
+      font-family: 'DM Mono', monospace;
+      color: var(--muted);
+      transition: border-color .2s, color .2s;
+      user-select: none;
+    }
+
+    .theme-toggle:hover { border-color: var(--border2); color: var(--text); }
+
+    .toggle-track {
+      width: 28px;
+      height: 15px;
+      border-radius: 8px;
+      background: var(--dark3);
+      border: 1px solid var(--border2);
+      position: relative;
+      transition: background .2s;
+      flex-shrink: 0;
+    }
+
+    .toggle-thumb {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--muted);
+      transition: transform .2s, background .2s;
+    }
+
+    body.light .toggle-track { background: rgba(224, 48, 48, 0.15); border-color: rgba(224, 48, 48, 0.3); }
+    body.light .toggle-thumb { transform: translateX(13px); background: var(--red); }
+
+    /* ─── WATERMARK ─────────────────────────────────────────── */
+    .watermark {
+      position: fixed;
+      bottom: 14px;
+      right: 18px;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      opacity: 0.45;
+      pointer-events: none;
+      letter-spacing: .06em;
+      z-index: 999;
+    }
+
+    /* ─── RESET & BASE ──────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--dark);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      line-height: 1.4;
+    }
+
+    /* ─── LAYOUT ────────────────────────────────────────────── */
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 40px 24px 60px;
+    }
+
+    /* ─── HEADER ────────────────────────────────────────────── */
+    .header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px;
+      letter-spacing: .08em;
+    }
+
+    .header p {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+    }
+
+    .tier-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 3px;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      background: var(--red-dim);
+      color: var(--red);
+      border: 1px solid rgba(224, 48, 48, 0.25);
+      letter-spacing: .06em;
+    }
+
+    /* ─── TABS ──────────────────────────────────────────────── */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .tabs::-webkit-scrollbar { display: none; }
+
+    .tab {
+      font-size: 12px;
+      padding: 9px 18px;
+      cursor: pointer;
+      color: var(--muted);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: color .15s;
+      font-family: 'DM Mono', monospace;
+      letter-spacing: .04em;
+    }
+
+    .tab:hover { color: var(--text); }
+    .tab.on { color: var(--red); border-bottom-color: var(--red); font-weight: 500; }
+
+    .panel { display: none; }
+    .panel.on { display: block; }
+
+    /* ─── SECTION LABEL ─────────────────────────────────────── */
+    .section-lbl {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: .18em;
+      color: var(--red);
+      text-transform: uppercase;
+      margin: 0 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-lbl::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .section-lbl .lbl-aside {
+      font-size: 9px;
+      color: var(--muted);
+      text-transform: none;
+      letter-spacing: 0;
+      font-weight: 300;
+    }
+
+    /* ─── CONFIG PANELS ─────────────────────────────────────── */
+    .config-panel {
+      background: var(--dark2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 18px 20px;
+      margin-bottom: 14px;
+    }
+
+    .config-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      margin-bottom: 12px;
+    }
+
+    .config-row:last-child { margin-bottom: 0; }
+
+    /* ─── FORM FIELDS ───────────────────────────────────────── */
+    .cfg-field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      flex: 1;
+      min-width: 100px;
+    }
+
+    .cfg-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: .12em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .cfg-input {
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--dark3);
+      color: var(--text);
+      font-size: 12px;
+      font-family: 'DM Mono', monospace;
+      width: 100%;
+      transition: border-color .15s;
+    }
+
+    .cfg-input:focus { outline: none; border-color: rgba(224, 48, 48, 0.4); }
+    .cfg-input.error { border-color: rgba(220, 80, 80, 0.5); background: rgba(220, 80, 80, 0.05); }
+
+    /* ─── BUTTONS ───────────────────────────────────────────── */
+    .cfg-btn {
+      padding: 7px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      font-family: 'DM Mono', monospace;
+      font-weight: 500;
+      border: 1px solid var(--red);
+      background: var(--red-dim);
+      color: var(--red);
+      transition: background .2s, border-color .2s;
+      white-space: nowrap;
+      letter-spacing: .02em;
+    }
+
+    .cfg-btn:hover { background: var(--red-mid); }
+
+    .cfg-btn.secondary {
+      border-color: var(--border);
+      background: var(--dark3);
+      color: var(--muted);
+    }
+
+    .cfg-btn.secondary:hover { color: var(--text); border-color: var(--border2); }
+
+    .cfg-btn.gold-btn {
+      border-color: var(--gold-mid);
+      background: var(--gold-dim);
+      color: var(--gold);
+    }
+
+    .cfg-btn.gold-btn:hover { background: rgba(201, 168, 76, 0.2); }
+
+    /* ─── PLAYER ENTRY LIST ─────────────────────────────────── */
+    .player-entry-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 280px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .player-entry-list::-webkit-scrollbar { width: 3px; }
+    .player-entry-list::-webkit-scrollbar-track { background: var(--dark3); }
+    .player-entry-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .pentry {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      background: var(--dark3);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 7px 10px;
+      transition: border-color .15s;
+    }
+
+    .pentry:hover { border-color: var(--border2); }
+
+    .pentry .pe-name { flex: 2; font-size: 12px; font-family: 'DM Mono', monospace; }
+    .pentry .pe-mmr  { flex: 0 0 70px; font-size: 12px; font-family: 'DM Mono', monospace; color: var(--gold); }
+    .pentry .pe-role { flex: 1; font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
+    .pentry .pe-stats { flex: 2; font-size: 10px; color: var(--muted); font-family: 'DM Mono', monospace; }
+
+    .pentry .pe-del {
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1;
+      padding: 0 4px;
+      transition: color .15s;
+    }
+
+    .pentry .pe-del:hover { color: var(--red-err); }
+
+    /* ─── BULK AREA ─────────────────────────────────────────── */
+    .bulk-area {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--dark3);
+      color: var(--text);
+      font-size: 11px;
+      font-family: 'DM Mono', monospace;
+      resize: vertical;
+      min-height: 80px;
+      transition: border-color .15s;
+    }
+
+    .bulk-area:focus { outline: none; border-color: rgba(224, 48, 48, 0.4); }
+
+    /* ─── HIDE NUMBER SPINNERS ──────────────────────────────── */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+
+    /* ─── HELP TOOLTIP ──────────────────────────────────────── */
+    .help-trigger {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--dark3); border: 1px solid var(--border2);
+      font-size: 9px; font-family: 'DM Mono', monospace; font-weight: 700;
+      color: var(--muted); cursor: pointer; margin-left: 8px;
+      vertical-align: middle; transition: all .15s; flex-shrink: 0;
+      text-transform: none; letter-spacing: 0;
+    }
+    .help-trigger:hover, .help-trigger.active {
+      background: rgba(224,48,48,0.15); border-color: rgba(224,48,48,0.4);
+      color: var(--red);
+    }
+
+    .help-popover {
+      background: var(--dark2); border: 1px solid var(--border2);
+      border-radius: 4px; padding: 14px 16px; margin-bottom: 12px;
+      position: relative;
+    }
+    .help-popover::before {
+      content: ''; position: absolute; top: -6px; left: 24px;
+      width: 10px; height: 10px; background: var(--dark2);
+      border-left: 1px solid var(--border2); border-top: 1px solid var(--border2);
+      transform: rotate(45deg);
+    }
+
+    .help-format-block {
+      background: var(--dark3); border-radius: 4px; padding: 10px 12px;
+      display: flex; flex-direction: column; gap: 4px;
+      border: 1px solid var(--border);
+    }
+    .hfrow { display: flex; align-items: baseline; gap: 12px; }
+    .hf-val {
+      font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500;
+      color: var(--red); min-width: 110px;
+    }
+    .hf-lbl {
+      font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted);
+    }
+
+    .bulk-hint {
+      font-size: 10px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      margin-top: 6px;
+      line-height: 1.6;
+    }
+
+    .parse-error {
+      font-size: 11px;
+      color: var(--red-err);
+      font-family: 'DM Mono', monospace;
+      margin-top: 4px;
+    }
+
+    /* ─── PLT INFO BAR (Builder) ────────────────────────────── */
+    .plt-bar {
+      background: var(--dark2);
+      border: 1px solid var(--gold-mid);
+      border-radius: 6px;
+      padding: 14px 18px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .plt-bar-info { flex: 1; min-width: 160px; }
+    .plt-bar-info .plt-title { font-size: 12px; color: var(--gold); font-weight: 500; margin-bottom: 2px; }
+    .plt-bar-info .plt-sub   { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
+
+    .plt-bar-mmr {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--gold);
+      font-family: 'DM Mono', monospace;
+    }
+
+    /* ─── CAP BAR ───────────────────────────────────────────── */
+    .cap-bar {
+      background: var(--dark2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 14px 18px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .cap-stat { text-align: center; }
+    .cap-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 2px; }
+    .cap-num   { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: .04em; line-height: 1; }
+
+    .cap-track {
+      flex: 1;
+      min-width: 100px;
+      height: 5px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .cap-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width .3s ease, background .3s ease;
+    }
+
+    #cap-status {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .selected-display {
+      min-height: 20px;
+      font-size: 11px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      margin-bottom: 14px;
+      line-height: 1.8;
+    }
+
+    /* ─── ROSTER GRID ───────────────────────────────────────── */
+    .roster-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .player-card {
+      background: var(--dark2);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+      user-select: none;
+      position: relative;
+    }
+
+    .player-card:hover:not(.locked):not(.disabled) { border-color: rgba(224, 48, 48, 0.35); }
+    .player-card.selected     { border-color: var(--red); background: var(--red-dim); }
+    .player-card.locked       { border-color: rgba(224, 48, 48, 0.35); background: var(--red-dim); cursor: default; }
+    .player-card.bde-active   { border-color: var(--gold-mid); background: var(--gold-dim); }
+    .player-card.plt-card     { border-color: rgba(201, 168, 76, 0.3); background: rgba(201, 168, 76, 0.03); border-style: dashed; }
+    .player-card.disabled     { opacity: .35; cursor: not-allowed; }
+
+    .pname  { font-size: 12px; font-weight: 500; margin-bottom: 3px; }
+    .pmmr   { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+    .prole  { font-size: 9px; color: var(--muted); margin-top: 4px; font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: .06em; }
+
+    .badge-corner {
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      font-size: 9px;
+      font-family: 'DM Mono', monospace;
+      font-weight: 500;
+    }
+
+    /* ─── TABLES ────────────────────────────────────────────── */
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+
+    th {
+      font-size: 9px;
+      font-weight: 500;
+      color: var(--muted);
+      text-align: left;
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--border);
+      font-family: 'DM Mono', monospace;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      white-space: nowrap;
+      user-select: none;
+      transition: color .15s;
+    }
+
+    th:hover { color: var(--text); }
+
+    td {
+      padding: 7px 8px;
+      border-bottom: .5px solid var(--border);
+      vertical-align: middle;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255, 255, 255, 0.018); }
+    tr.best td { background: rgba(201, 168, 76, 0.05) !important; }
+
+    /* ─── GRADE BADGES ──────────────────────────────────────── */
+    .bx {
+      font-size: 9px;
+      font-weight: 500;
+      padding: 2px 7px;
+      border-radius: 3px;
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      white-space: nowrap;
+    }
+
+    .s-s { background: #EAF3DE; color: #27500A; }
+    .s-a { background: #E6F1FB; color: #0C447C; }
+    .s-b { background: #FAEEDA; color: #633806; }
+    .s-c { background: #FCEBEB; color: #791F1F; }
+
+    /* ─── PLAYER TAGS (table cells) ─────────────────────────── */
+    .tag {
+      display: inline-block;
+      margin: 1px 2px 1px 0;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+    }
+
+    /* ─── INFO BOX ──────────────────────────────────────────── */
+    .info-box {
+      background: var(--dark2);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 12px 16px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 14px;
+    }
+
+    .info-box strong { color: var(--text); }
+
+    /* ─── SEARCH INPUT ──────────────────────────────────────── */
+    .search-input {
+      width: 100%;
+      padding: 7px 12px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--dark2);
+      color: var(--text);
+      font-size: 12px;
+      margin-bottom: 10px;
+      font-family: 'DM Mono', monospace;
+      transition: border-color .15s;
+    }
+
+    .search-input:focus { outline: none; border-color: rgba(224, 48, 48, 0.3); }
+
+    /* ─── MISC UTILITY ──────────────────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--muted);
+      font-size: 12px;
+      font-family: 'DM Mono', monospace;
+      border: 1px dashed var(--border);
+      border-radius: 5px;
+    }
+
+    .empty-state strong {
+      display: block;
+      color: var(--text);
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    .no-players-msg {
+      padding: 20px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 11px;
+      font-family: 'DM Mono', monospace;
+    }
+
+    .combo-count {
+      margin-bottom: 8px;
+      font-size: 11px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+    }
+
+    .table-wrap { overflow-x: auto; }
+
+    /* ─── ROLE STEPPER ──────────────────────────────────────── */
+    .role-stepper {
+      width: 22px; height: 22px; border-radius: 4px;
+      border: 1px solid var(--border); background: var(--dark3); color: var(--text);
+      font-size: 14px; line-height: 1; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color .15s, background .15s; flex-shrink: 0;
+    }
+    .role-stepper:hover { border-color: var(--border2); background: var(--dark4); }
+    .role-count {
+      font-family: 'Bebas Neue', sans-serif; font-size: 22px;
+      min-width: 20px; text-align: center; line-height: 1;
+    }
+
+    /* ─── FLEX ROLE CHECKLIST ───────────────────────────────── */
+    .flex-checklist {
+      display: none;
+      margin-top: 8px;
+      padding: 8px 10px;
+      background: rgba(160, 112, 192, 0.07);
+      border: 1px solid rgba(160, 112, 192, 0.25);
+      border-radius: 4px;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .flex-checklist.visible { display: flex; }
+    .flex-checklist-label {
+      font-size: 9px; color: var(--muted); font-family: 'DM Mono', monospace;
+      letter-spacing: .08em; text-transform: uppercase; width: 100%; margin-bottom: 2px;
+    }
+    .flex-pill {
+      display: flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 20px;
+      border: 1px solid var(--border); background: var(--dark3);
+      font-size: 11px; font-family: 'DM Mono', monospace; color: var(--muted);
+      cursor: pointer; user-select: none; transition: all .15s;
+    }
+    .flex-pill:hover { border-color: rgba(160,112,192,0.4); color: var(--text); }
+    .flex-pill.on {
+      background: rgba(160,112,192,0.15); border-color: rgba(160,112,192,0.5);
+      color: #C090E8; font-weight: 500;
+    }
+
+    /* ─── ROLE DROPDOWN ─────────────────────────────────────── */
+    .role-drop-wrap { position: relative; }
+
+    .role-drop-btn {
+      width: 100%;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--dark3);
+      color: var(--text);
+      font-size: 12px;
+      font-family: 'DM Mono', monospace;
+      cursor: pointer;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      transition: border-color .15s;
+    }
+
+    .role-drop-btn:focus { outline: none; border-color: rgba(224,48,48,0.4); }
+    .role-drop-btn .caret { font-size: 9px; color: var(--muted); }
+
+    .role-drop-menu {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      width: 100%;
+      background: var(--dark2);
+      border: 1px solid var(--border2);
+      border-radius: 4px;
+      z-index: 200;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    }
+
+    .role-drop-item {
+      padding: 8px 12px;
+      font-size: 12px;
+      font-family: 'DM Mono', monospace;
+      cursor: pointer;
+      color: var(--muted);
+      transition: background .1s, color .1s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .role-drop-item:hover { background: var(--dark3); color: var(--text); }
+    .role-drop-item.selected { color: var(--text); font-weight: 500; }
+    .role-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ─── BULK STATS IMPORT ─────────────────────────────────── */
+    .bulk-tabs { display: flex; gap: 0; margin-bottom: 0; border-bottom: 1px solid var(--border); }
+    .bulk-tab {
+      padding: 6px 14px; font-size: 11px; font-family: 'DM Mono', monospace;
+      cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent;
+      margin-bottom: -1px; transition: color .15s;
+    }
+    .bulk-tab.on { color: var(--red); border-bottom-color: var(--red); }
+    .bulk-pane { display: none; padding-top: 12px; }
+    .bulk-pane.on { display: block; }
+
+    .pending-player {
+      background: var(--dark3);
+      border: 1px solid rgba(201,168,76,0.3);
+      border-radius: 4px;
+      padding: 10px 14px;
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .pending-info { flex: 1; min-width: 140px; }
+    .pending-name { font-size: 13px; font-weight: 500; color: var(--gold); margin-bottom: 2px; }
+    .pending-stats { font-size: 10px; color: var(--muted); font-family: 'DM Mono', monospace; }
+
+    /* ─── PLT PROMO PLAYERS LIST ────────────────────────────── */
+    .promo-entry-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .promo-entry {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--dark3);
+      border: 1px solid rgba(201, 168, 76, 0.2);
+      border-radius: 4px;
+      padding: 7px 12px;
+    }
+
+    .promo-entry .pe-label { flex: 1; font-size: 12px; color: var(--gold); font-family: 'DM Mono', monospace; }
+    .promo-entry .pe-mmr   { font-size: 12px; color: var(--gold); font-family: 'DM Mono', monospace; opacity: .7; }
+    .promo-entry .pe-del   { cursor: pointer; color: var(--muted); font-size: 14px; padding: 0 4px; transition: color .15s; }
+    .promo-entry .pe-del:hover { color: var(--red-err); }
+
+    .promo-empty {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-style: italic;
+    }
+  </style>
+</head>
+
+<body>
+<div class="wrap">
+
+  <!-- ─── HEADER ─────────────────────────────────────────────── -->
+  <div class="header">
+    <div>
+      <h1 id="page-title">Roster Builder</h1>
+      <p id="page-sub">Configure your tier, cap, and players in the Setup tab</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span class="tier-badge" id="tier-badge">UNCONFIGURED</span>
+      <div class="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode">
+        <div class="toggle-track"><div class="toggle-thumb"></div></div>
+        <span id="theme-lbl">Light</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── WATERMARK ────────────────────────────────────────────── -->
+  <div class="watermark">made by aziel</div>
+
+  <!-- ─── TABS ───────────────────────────────────────────────── -->
+  <div class="tabs">
+    <div class="tab on"  onclick="sw('setup',   this)">⚙ Setup</div>
+    <div class="tab" id="tab-builder" onclick="sw('builder', this)" style="display:none">Builder</div>
+    <div class="tab" id="tab-all"     onclick="sw('all',     this)" style="display:none">All Valid Combos</div>
+    <div class="tab" id="tab-ranked"  onclick="sw('ranked',  this)" style="display:none">Best by Stats</div>
+    <div class="tab" id="tab-roles"   onclick="sw('roles',   this)" style="display:none">Role Breakdown</div>
+    <div class="tab" id="tab-duos"    onclick="sw('duos',    this)" style="display:none">Intangibles</div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!--  SETUP PANEL                                              -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <div class="panel on" id="p-setup">
+
+    <!-- Tier Config -->
+    <div class="config-panel">
+      <p class="section-lbl">Tier Config</p>
+      <div class="config-row">
+        <div class="cfg-field">
+          <span class="cfg-label">Tier Name</span>
+          <input class="cfg-input" id="cfg-tier" type="text" placeholder="Franchise - TIER">
+        </div>
+        <div class="cfg-field" style="flex: 0 0 140px">
+          <span class="cfg-label">MMR Cap</span>
+          <input class="cfg-input" id="cfg-cap" type="number" value="820" min="1" placeholder="820">
+        </div>
+        <div class="cfg-field" style="flex: 0 0 110px">
+          <span class="cfg-label">Roster Size</span>
+          <input class="cfg-input" id="cfg-size" type="number" value="5" min="2" max="10" placeholder="5">
+        </div>
+      </div>
+    </div>
+
+    <!-- Promo Lower Tier -->
+    <div class="config-panel">
+      <p class="section-lbl">Promo Lower Tier</p>
+
+      <!-- Add row -->
+      <div class="config-row" style="align-items: flex-end; margin-bottom: 10px">
+        <div class="cfg-field" style="flex: 0 0 200px">
+          <span class="cfg-label">Promo Player Name</span>
+          <input class="cfg-input" id="promo-name-input" type="text" placeholder="e.g. Promo Slot A"
+                 onkeydown="if(event.key==='Enter') addPromoPlayer()">
+        </div>
+        <div class="cfg-field" style="flex: 0 0 110px">
+          <span class="cfg-label">Role</span>
+          <div class="role-drop-wrap">
+            <button type="button" class="role-drop-btn" onclick="toggleGenericDrop(event,'promo-role-menu')">
+              <span id="promo-role-label" style="color:var(--muted)">— None —</span>
+              <span class="caret">▾</span>
+            </button>
+            <div class="role-drop-menu" id="promo-role-menu" style="display:none">
+              <div class="role-drop-item" onclick="pickGenericRole('promo-role-val','promo-role-label','','promo-role-menu');togglePromoFlex(false)">— None —</div>
+              <div class="role-drop-item" onclick="pickGenericRole('promo-role-val','promo-role-label','DUELIST','promo-role-menu');togglePromoFlex(false)"><span class="role-dot" style="background:#E05050"></span>Duelist</div>
+              <div class="role-drop-item" onclick="pickGenericRole('promo-role-val','promo-role-label','CTRL','promo-role-menu');togglePromoFlex(false)"><span class="role-dot" style="background:#5090D0"></span>Controller</div>
+              <div class="role-drop-item" onclick="pickGenericRole('promo-role-val','promo-role-label','SENTI','promo-role-menu');togglePromoFlex(false)"><span class="role-dot" style="background:#50A878"></span>Sentinel</div>
+              <div class="role-drop-item" onclick="pickGenericRole('promo-role-val','promo-role-label','INI','promo-role-menu');togglePromoFlex(false)"><span class="role-dot" style="background:#C9A84C"></span>Initiator</div>
+              <div class="role-drop-item" onclick="pickGenericRole('promo-role-val','promo-role-label','FLEX','promo-role-menu');togglePromoFlex(true)"><span class="role-dot" style="background:#A070C0"></span>Flex</div>
+            </div>
+          </div>
+          <input type="hidden" id="promo-role-val" value="">
+          <!-- Flex sub-role pills for promo -->
+          <div class="flex-checklist" id="promo-flex-checklist">
+            <span class="flex-checklist-label">Can play:</span>
+            <div class="flex-pill" data-val="DUELIST" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#E05050"></span>Duelist</div>
+            <div class="flex-pill" data-val="CTRL" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#5090D0"></span>Controller</div>
+            <div class="flex-pill" data-val="SENTI" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#50A878"></span>Sentinel</div>
+            <div class="flex-pill" data-val="INI" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#C9A84C"></span>Initiator</div>
+          </div>
+        </div>
+        <div class="cfg-field" style="flex: 0 0 130px">
+          <span class="cfg-label">Promo Player MMR</span>
+          <input class="cfg-input" id="promo-mmr-input" type="number" value="145" min="1" placeholder="145"
+                 onkeydown="if(event.key==='Enter') addPromoPlayer()">
+        </div>
+        <div class="cfg-field" style="flex: 0 0 auto; justify-content: flex-end">
+          <span class="cfg-label">&nbsp;</span>
+          <button class="cfg-btn gold-btn" onclick="addPromoPlayer()">+ Add Promo Player</button>
+        </div>
+        <div class="cfg-field" style="flex: 1">
+          <span class="cfg-label">&nbsp;</span>
+          <p style="font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; padding: 8px 0; line-height: 1.6">
+            Promo player cards appear in the Builder as ghost slots — click them like any other player.
+          </p>
+        </div>
+      </div>
+
+      <!-- Promo player list -->
+      <div id="promo-entry-list">
+        <p class="promo-empty" id="promo-empty-msg">No promo players added yet.</p>
+      </div>
+    </div>
+
+    <!-- Add Players -->
+    <div class="config-panel">
+      <p class="section-lbl">Add Players</p>
+
+      <div class="config-row" style="margin-bottom: 10px">
+        <div class="cfg-field" style="flex: 3">
+          <span class="cfg-label">Name / Gamertag</span>
+          <input class="cfg-input" id="add-name" type="text" placeholder="PlayerName#0000"
+                 onkeydown="if(event.key==='Enter') addPlayer()">
+        </div>
+        <div class="cfg-field" style="flex: 0 0 85px">
+          <span class="cfg-label">MMR</span>
+          <input class="cfg-input" id="add-mmr" type="number" placeholder="175" min="1"
+                 onkeydown="if(event.key==='Enter') addPlayer()">
+        </div>
+        <!-- Role dropdown -->
+        <div class="cfg-field" style="flex: 0 0 110px">
+          <span class="cfg-label">Role</span>
+          <div class="role-drop-wrap" id="role-drop-wrap">
+            <button type="button" class="role-drop-btn" id="role-drop-btn" onclick="toggleRoleDrop(event)">
+              <span id="role-drop-label">— None —</span>
+              <span class="caret">▾</span>
+            </button>
+            <div class="role-drop-menu" id="role-drop-menu" style="display:none">
+              <div class="role-drop-item" onclick="pickRole('')">— None —</div>
+              <div class="role-drop-item" onclick="pickRole('DUELIST')"><span class="role-dot" style="background:#E05050"></span>Duelist</div>
+              <div class="role-drop-item" onclick="pickRole('CTRL')"><span class="role-dot" style="background:#5090D0"></span>Controller</div>
+              <div class="role-drop-item" onclick="pickRole('SENTI')"><span class="role-dot" style="background:#50A878"></span>Sentinel</div>
+              <div class="role-drop-item" onclick="pickRole('INI')"><span class="role-dot" style="background:#C9A84C"></span>Initiator</div>
+              <div class="role-drop-item" onclick="pickRole('FLEX')"><span class="role-dot" style="background:#A070C0"></span>Flex</div>
+            </div>
+          </div>
+          <input type="hidden" id="add-role" value="">
+          <!-- Flex sub-role checklist -->
+          <div class="flex-checklist" id="flex-checklist">
+            <span class="flex-checklist-label">Can play:</span>
+            <div class="flex-pill" data-val="DUELIST" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#E05050"></span>Duelist</div>
+            <div class="flex-pill" data-val="CTRL" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#5090D0"></span>Controller</div>
+            <div class="flex-pill" data-val="SENTI" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#50A878"></span>Sentinel</div>
+            <div class="flex-pill" data-val="INI" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#C9A84C"></span>Initiator</div>
+          </div>
+        </div>
+        <div class="cfg-field" style="flex: 0 0 80px">
+          <span class="cfg-label">ACS</span>
+          <input class="cfg-input" id="add-acs" type="number" placeholder="220"
+                 onkeydown="if(event.key==='Enter') addPlayer()">
+        </div>
+        <div class="cfg-field" style="flex: 0 0 65px">
+          <span class="cfg-label">KD</span>
+          <input class="cfg-input" id="add-kd" type="number" step="0.01" placeholder="1.10"
+                 onkeydown="if(event.key==='Enter') addPlayer()">
+        </div>
+        <div class="cfg-field" style="flex: 0 0 auto; justify-content: flex-end">
+          <span class="cfg-label">&nbsp;</span>
+          <button class="cfg-btn" onclick="addPlayer()">+ Add</button>
+        </div>
+      </div>
+
+      <div id="parse-error" class="parse-error" style="display: none"></div>
+
+      <!-- Bulk Import -->
+      <p class="section-lbl" style="margin-top: 16px">Bulk Import
+        <span class="help-trigger" id="bulk-help-trigger" onclick="toggleBulkHelp()" title="How to use">?</span>
+      </p>
+      <!-- Help popover -->
+      <div class="help-popover" id="bulk-help-popover" style="display:none">
+        <p style="margin-bottom:8px;font-size:11px;color:var(--text)">Just copy the stats block straight from your tracker and paste it in. The format is one value per line:</p>
+        <div class="help-format-block">
+          <div class="hfrow"><span class="hf-val">PlayerName#tag</span><span class="hf-lbl">— name</span></div>
+          <div class="hfrow"><span class="hf-val">1.24</span><span class="hf-lbl">— rating</span></div>
+          <div class="hfrow"><span class="hf-val">256.57</span><span class="hf-lbl">— ACS</span></div>
+          <div class="hfrow"><span class="hf-val">256</span><span class="hf-lbl">— kills</span></div>
+          <div class="hfrow"><span class="hf-val">207</span><span class="hf-lbl">— deaths</span></div>
+          <div class="hfrow"><span class="hf-val">110</span><span class="hf-lbl">— assists</span></div>
+          <div class="hfrow"><span class="hf-val">1.24</span><span class="hf-lbl">— KD</span></div>
+        </div>
+        <p style="margin-top:8px;font-size:10px;color:var(--muted)">Multiple players at once is fine — just paste the whole block. You'll enter MMR for each player after.</p>
+      </div>
+      <div class="bulk-hint" style="margin-bottom:8px">
+        Paste a stats block — name first, then one number per line (rating, ACS, kills, deaths, assists, KD). Multiple players at once is fine.
+      </div>
+      <textarea class="bulk-area" id="stats-paste-input" placeholder="PlayerName#tag&#10;1.24&#10;256.57&#10;256&#10;207&#10;110&#10;1.24" style="min-height:140px" oninput="parseStatsPaste(this.value)"></textarea>
+
+      <div id="stats-parse-msg" class="bulk-hint" style="margin-top:6px;display:none"></div>
+
+      <!-- Pending players list -->
+      <div id="stats-pending" style="display:none;margin-top:12px">
+        <p class="section-lbl">Parsed Players <span class="lbl-aside" id="pending-count-lbl"></span></p>
+        <div id="pending-list"></div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px">
+          <button class="cfg-btn secondary" onclick="clearPending()">Clear</button>
+          <button class="cfg-btn gold-btn" onclick="confirmAllPending()">Add All with MMR ✓</button>
+        </div>
+        <div id="pending-error" class="parse-error" style="display:none;margin-top:6px"></div>
+      </div>
+
+      <div class="config-row" style="margin-top: 12px; justify-content: flex-end; gap: 8px">
+        <button class="cfg-btn secondary" onclick="clearPlayers()">Clear All</button>
+        <button class="cfg-btn"           onclick="applyConfig()">Apply &amp; Build ▶</button>
+      </div>
+    </div>
+
+    <!-- Player List -->
+    <div class="config-panel" id="player-list-panel">
+      <p class="section-lbl">
+        Player List
+        <span id="player-count-lbl" class="lbl-aside"></span>
+      </p>
+      <div class="player-entry-list" id="player-entry-list">
+        <div class="no-players-msg">No players added yet</div>
+      </div>
+    </div>
+
+  </div><!-- /p-setup -->
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!--  BUILDER PANEL                                            -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <div class="panel" id="p-builder">
+
+    <!-- PLT Info Bar -->
+    <div class="plt-bar" id="bde-box">
+      <div class="plt-bar-info">
+        <p class="plt-title">Promo Lower Tier</p>
+        <p class="plt-sub">Ghost cards always in pool — selectable like any player</p>
+      </div>
+      <div class="plt-bar-mmr" id="bde-mmr-live-display">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- Cap Bar -->
+    <div class="cap-bar">
+      <div class="cap-stat">
+        <p class="cap-label">MMR Used</p>
+        <p class="cap-num" id="cap-used">0</p>
+      </div>
+      <div class="cap-track">
+        <div class="cap-fill" id="cap-fill" style="width: 0%; background: var(--green)"></div>
+      </div>
+      <div class="cap-stat">
+        <p class="cap-label">Remaining</p>
+        <p class="cap-num" id="cap-rem">—</p>
+      </div>
+      <div class="cap-stat">
+        <p class="cap-label">Players</p>
+        <p class="cap-num" id="cap-count">0/5</p>
+      </div>
+      <div class="cap-stat">
+        <p class="cap-label">Cap</p>
+        <p class="cap-num" id="cap-display" style="color: var(--muted)">820</p>
+      </div>
+      <div id="cap-status">—</div>
+    </div>
+
+    <div class="selected-display" id="sel-display">No players selected</div>
+
+    <p class="section-lbl" id="builder-section-lbl">Roster</p>
+
+    <div id="builder-empty" class="empty-state" style="display: none">
+      <strong>No players configured</strong>
+      Go to the Setup tab to add players and configure your tier.
+    </div>
+
+    <div class="roster-grid" id="roster-grid"></div>
+
+  </div><!-- /p-builder -->
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!--  ALL VALID COMBOS PANEL                                   -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <div class="panel" id="p-all">
+
+    <div class="info-box" id="all-info">Configure players in the Setup tab first.</div>
+
+    <input class="search-input" type="text" id="all-search"
+           placeholder="Search by player name…"
+           oninput="filterAll(this.value)">
+
+    <div class="combo-count" id="combo-count"></div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortAll('rank')">#</th>
+            <th>Roster</th>
+            <th onclick="sortAll('total')">MMR</th>
+            <th onclick="sortAll('rem')">Room</th>
+            <th onclick="sortAll('avgAcs')">Avg ACS</th>
+            <th onclick="sortAll('avgKd')">Avg KD</th>
+          </tr>
+        </thead>
+        <tbody id="all-body"></tbody>
+      </table>
+    </div>
+
+  </div><!-- /p-all -->
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!--  BEST BY STATS PANEL                                      -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <div class="panel" id="p-ranked">
+
+    <div class="info-box">
+      Valid combos ranked by <strong>composite stat score</strong> (ACS · KD).
+      ⭐ = best overall lineup. Stats required — players without stats are excluded from ranking.
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Roster</th>
+            <th>MMR</th>
+            <th onclick="sortRanked('avgAcs')">Avg ACS</th>
+            <th onclick="sortRanked('avgKd')">Avg KD</th>
+            <th onclick="sortRanked('score')">Score</th>
+            <th>Grade</th>
+          </tr>
+        </thead>
+        <tbody id="ranked-body"></tbody>
+      </table>
+    </div>
+
+  </div><!-- /p-ranked -->
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!--  ROLE BREAKDOWN PANEL                                     -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <div class="panel" id="p-roles">
+
+    <div class="info-box" id="roles-info">Configure players in the <strong>Setup</strong> tab first.</div>
+
+    <div class="config-panel" style="margin-bottom:14px">
+      <p class="section-lbl">Set your comp <span class="lbl-aside">— how many of each role. Flex counts toward any role. Must add up to roster size.</span></p>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end">
+        <div class="cfg-field" style="flex:0 0 80px">
+          <span class="cfg-label" style="color:#E05050">Duelist</span>
+          <div style="display:flex;align-items:center;gap:4px">
+            <button class="role-stepper" onclick="stepRole('duelist',-1)">−</button>
+            <span class="role-count" id="rc-duelist" style="color:#E05050">0</span>
+            <button class="role-stepper" onclick="stepRole('duelist',1)">+</button>
+          </div>
+        </div>
+        <div class="cfg-field" style="flex:0 0 80px">
+          <span class="cfg-label" style="color:#5090D0">Controller</span>
+          <div style="display:flex;align-items:center;gap:4px">
+            <button class="role-stepper" onclick="stepRole('controller',-1)">−</button>
+            <span class="role-count" id="rc-controller" style="color:#5090D0">0</span>
+            <button class="role-stepper" onclick="stepRole('controller',1)">+</button>
+          </div>
+        </div>
+        <div class="cfg-field" style="flex:0 0 80px">
+          <span class="cfg-label" style="color:#50A878">Sentinel</span>
+          <div style="display:flex;align-items:center;gap:4px">
+            <button class="role-stepper" onclick="stepRole('sentinel',-1)">−</button>
+            <span class="role-count" id="rc-sentinel" style="color:#50A878">0</span>
+            <button class="role-stepper" onclick="stepRole('sentinel',1)">+</button>
+          </div>
+        </div>
+        <div class="cfg-field" style="flex:0 0 80px">
+          <span class="cfg-label" style="color:#C9A84C">Initiator</span>
+          <div style="display:flex;align-items:center;gap:4px">
+            <button class="role-stepper" onclick="stepRole('initiator',-1)">−</button>
+            <span class="role-count" id="rc-initiator" style="color:#C9A84C">0</span>
+            <button class="role-stepper" onclick="stepRole('initiator',1)">+</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <span class="cfg-label">&nbsp;</span>
+          <div style="display:flex;gap:8px;align-items:center">
+            <span id="role-total-lbl" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">Total: 0 / 5</span>
+            <button class="cfg-btn secondary" onclick="resetRolePicker()" style="padding:5px 10px;font-size:11px">Reset</button>
+          </div>
+        </div>
+      </div>
+      <div id="role-picker-error" class="parse-error" style="display:none;margin-top:8px"></div>
+    </div>
+
+    <div class="combo-count" id="roles-count"></div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Roster</th>
+            <th onclick="sortRoles('total')">MMR</th>
+            <th onclick="sortRoles('rem')">Room</th>
+            <th style="color:#E05050">DUELIST</th>
+            <th style="color:#5090D0">CTRL</th>
+            <th style="color:#50A878">SENTI</th>
+            <th style="color:#C9A84C">INI</th>
+            <th style="color:#A070C0">FLEX</th>
+          </tr>
+        </thead>
+        <tbody id="roles-body"></tbody>
+      </table>
+    </div>
+
+  </div><!-- /p-roles -->
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!--  GOOD DUOS PANEL                                          -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <div class="panel" id="p-duos">
+
+    <!-- Good Duos -->
+    <div class="config-panel" style="margin-bottom:14px">
+      <p class="section-lbl" style="color:#6ab478">Good Duos <span class="lbl-aside" style="color:var(--muted)">— slight boost in every ranking when both are in a combo</span></p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+        <div class="cfg-field">
+          <span class="cfg-label">Player A</span>
+          <div class="role-drop-wrap">
+            <button type="button" class="role-drop-btn" onclick="toggleGenericDrop(event,'duo-a-menu')" style="min-width:160px">
+              <span id="duo-a-label" style="color:var(--muted)">Select player…</span><span class="caret">▾</span>
+            </button>
+            <div class="role-drop-menu" id="duo-a-menu" style="display:none;max-height:200px;overflow-y:auto"></div>
+          </div>
+          <input type="hidden" id="duo-a-val" value="">
+        </div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--muted);padding-bottom:6px">+</div>
+        <div class="cfg-field">
+          <span class="cfg-label">Player B</span>
+          <div class="role-drop-wrap">
+            <button type="button" class="role-drop-btn" onclick="toggleGenericDrop(event,'duo-b-menu')" style="min-width:160px">
+              <span id="duo-b-label" style="color:var(--muted)">Select player…</span><span class="caret">▾</span>
+            </button>
+            <div class="role-drop-menu" id="duo-b-menu" style="display:none;max-height:200px;overflow-y:auto"></div>
+          </div>
+          <input type="hidden" id="duo-b-val" value="">
+        </div>
+        <div class="cfg-field" style="flex:0 0 auto">
+          <span class="cfg-label">&nbsp;</span>
+          <button class="cfg-btn" style="background:rgba(100,180,120,0.12);border-color:rgba(100,180,120,0.4);color:#6ab478" onclick="addDuo()">♥ Link Good Duo</button>
+        </div>
+      </div>
+      <div id="duo-error" class="parse-error" style="display:none;margin-top:8px"></div>
+      <div id="duo-list-container" style="margin-top:10px">
+        <p style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;font-style:italic">No good duos linked yet.</p>
+      </div>
+    </div>
+
+    <!-- Bad Duos -->
+    <div class="config-panel" style="margin-bottom:14px;border-color:rgba(200,80,80,0.2)">
+      <p class="section-lbl" style="color:#C07070">Bad Duos <span class="lbl-aside" style="color:var(--muted)">— pushed to the bottom of every ranking when both appear</span></p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+        <div class="cfg-field">
+          <span class="cfg-label">Player A</span>
+          <div class="role-drop-wrap">
+            <button type="button" class="role-drop-btn" onclick="toggleGenericDrop(event,'badduo-a-menu')" style="min-width:160px">
+              <span id="badduo-a-label" style="color:var(--muted)">Select player…</span><span class="caret">▾</span>
+            </button>
+            <div class="role-drop-menu" id="badduo-a-menu" style="display:none;max-height:200px;overflow-y:auto"></div>
+          </div>
+          <input type="hidden" id="badduo-a-val" value="">
+        </div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--muted);padding-bottom:6px">+</div>
+        <div class="cfg-field">
+          <span class="cfg-label">Player B</span>
+          <div class="role-drop-wrap">
+            <button type="button" class="role-drop-btn" onclick="toggleGenericDrop(event,'badduo-b-menu')" style="min-width:160px">
+              <span id="badduo-b-label" style="color:var(--muted)">Select player…</span><span class="caret">▾</span>
+            </button>
+            <div class="role-drop-menu" id="badduo-b-menu" style="display:none;max-height:200px;overflow-y:auto"></div>
+          </div>
+          <input type="hidden" id="badduo-b-val" value="">
+        </div>
+        <div class="cfg-field" style="flex:0 0 auto">
+          <span class="cfg-label">&nbsp;</span>
+          <button class="cfg-btn" style="background:rgba(200,80,80,0.1);border-color:rgba(200,80,80,0.35);color:#C07070" onclick="addBadDuo()">✕ Link Bad Duo</button>
+        </div>
+      </div>
+      <div id="badduo-error" class="parse-error" style="display:none;margin-top:8px"></div>
+      <div id="badduo-list-container" style="margin-top:10px">
+        <p style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;font-style:italic">No bad duos linked yet.</p>
+      </div>
+    </div>
+
+    <!-- Locked Players -->
+    <div class="config-panel" style="border-color:rgba(201,168,76,0.25)">
+      <p class="section-lbl" style="color:var(--gold)">Lock Players <span class="lbl-aside" style="color:var(--muted)">— only show combos that include these players</span></p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+        <div class="cfg-field">
+          <span class="cfg-label">Player</span>
+          <div class="role-drop-wrap">
+            <button type="button" class="role-drop-btn" onclick="toggleGenericDrop(event,'lock-menu')" style="min-width:160px">
+              <span id="lock-label" style="color:var(--muted)">Select player…</span><span class="caret">▾</span>
+            </button>
+            <div class="role-drop-menu" id="lock-menu" style="display:none;max-height:200px;overflow-y:auto"></div>
+          </div>
+          <input type="hidden" id="lock-val" value="">
+        </div>
+        <div class="cfg-field" style="flex:0 0 auto">
+          <span class="cfg-label">&nbsp;</span>
+          <button class="cfg-btn" style="background:rgba(201,168,76,0.1);border-color:rgba(201,168,76,0.35);color:var(--gold)" onclick="lockPlayer()">🔒 Lock Player</button>
+        </div>
+        <div class="cfg-field" style="flex:1">
+          <span class="cfg-label">&nbsp;</span>
+          <p style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;padding:8px 0;line-height:1.5">Only combos with this player will show across all tabs.</p>
+        </div>
+      </div>
+      <div id="lock-error" class="parse-error" style="display:none;margin-top:8px"></div>
+      <div id="lock-list-container" style="margin-top:10px">
+        <p style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;font-style:italic">No players locked yet.</p>
+      </div>
+    </div>
+
+  </div><!-- /p-duos -->
+
+<!-- ─────────────────────────────────────────────────────────── -->
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════════
+let CFG = {
+  tierName:   '',
+  cap:        820,
+  rosterSize: 5,
+  bdeMmr:     145,   // legacy single-slot (kept for compat)
+};
+
+// Multi-promo-player list
+let PROMO_PLAYERS = []; // [{id, label, mmr}]
+let _promoIdSeq   = 1;
+
+let PLAYERS = [];
+let DUOS = [];      // [{a, b}] good duos
+let BAD_DUOS = [];  // [{a, b}] bad duos — combos with both get pushed down
+let LOCKED_PLAYERS = new Set(); // player names that MUST appear in every combo
+let selected = new Set();
+
+let allSort = 'rank', allDir = 1, allFilter = '';
+let rankSort = 'score', rankDir = 1;
+
+
+// ═══════════════════════════════════════════════════════════════
+//  PROMO (PLT) HELPERS
+// ═══════════════════════════════════════════════════════════════
+function togglePromoFlex(show) {
+  const el = document.getElementById('promo-flex-checklist');
+  if (el) el.classList.toggle('visible', show);
+  if (!show) resetFlexPills('promo-flex-checklist');
+}
+
+function addPromoPlayer() {
+  const nameInput = document.getElementById('promo-name-input');
+  const mmrInput  = document.getElementById('promo-mmr-input');
+  const roleVal   = document.getElementById('promo-role-val').value || '—';
+  let flexRoles   = null;
+  if (roleVal === 'FLEX') flexRoles = getFlexRoles('promo-flex-checklist');
+
+  const label = nameInput.value.trim() || `Promo Player ${_promoIdSeq}`;
+  const mmr   = parseInt(mmrInput.value) || 145;
+  const id    = '__PLT__' + (_promoIdSeq++);
+
+  PROMO_PLAYERS.push({ id, label, mmr, role: roleVal, flexRoles });
+
+  nameInput.value = '';
+  mmrInput.value  = '';
+  pickGenericRole('promo-role-val', 'promo-role-label', '', 'promo-role-menu');
+  togglePromoFlex(false);
+
+  renderPromoList();
+  refreshBuilderPLTBar();
+}
+
+function removePromoPlayer(id) {
+  PROMO_PLAYERS = PROMO_PLAYERS.filter(p => p.id !== id);
+  selected.delete(id);
+  renderPromoList();
+  refreshBuilderPLTBar();
+  buildGrid();
+}
+
+function renderPromoList() {
+  const container = document.getElementById('promo-entry-list');
+  const emptyMsg  = document.getElementById('promo-empty-msg');
+
+  if (!PROMO_PLAYERS.length) {
+    container.innerHTML = '<p class="promo-empty" id="promo-empty-msg">No promo players added yet.</p>';
+    return;
+  }
+
+  container.innerHTML = PROMO_PLAYERS.map(p => `
+    <div class="promo-entry">
+      <span class="pe-label">${p.label}</span>
+      <span class="pe-mmr">${p.mmr} MMR</span>
+      <span class="pe-role" style="color:${ROLE_COLORS[p.role]||'var(--muted)'};font-family:'DM Mono',monospace;font-size:11px">${p.role && p.role !== '—' ? (ROLE_LABELS[p.role]||p.role) : '—'}</span>
+      <span class="pe-del" onclick="removePromoPlayer('${p.id}')" title="Remove">✕</span>
+    </div>
+  `).join('');
+}
+
+function refreshBuilderPLTBar() {
+  const bar = document.getElementById('bde-box');
+  const display = document.getElementById('bde-mmr-live-display');
+
+  if (!PROMO_PLAYERS.length) {
+    display.innerHTML = '<span style="color:var(--muted)">No promo players configured · edit in Setup</span>';
+    bar.style.borderColor = 'var(--border)';
+    return;
+  }
+
+  bar.style.borderColor = 'var(--gold-mid)';
+  display.innerHTML = PROMO_PLAYERS
+    .map(p => `<span><strong style="color:var(--gold)">${p.label}</strong> · ${p.mmr} MMR</span>`)
+    .join('<span style="color:var(--border2);margin:0 6px">|</span>');
+  display.style.display = 'flex';
+  display.style.flexWrap = 'wrap';
+  display.style.gap = '6px';
+}
+
+function allPlayersWithPLT() {
+  const promos = PROMO_PLAYERS.map(p => ({
+    name: p.id, mmr: p.mmr, role: p.role || '—', flexRoles: p.flexRoles || null,
+    acs: null, kd: null, isPLT: true, label: p.label
+  }));
+  return [...PLAYERS, ...promos];
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+//  BULK HELP TOGGLE
+// ═══════════════════════════════════════════════════════════════
+function toggleBulkHelp() {
+  const pop = document.getElementById('bulk-help-popover');
+  const btn = document.getElementById('bulk-help-trigger');
+  const showing = pop.style.display !== 'none';
+  pop.style.display = showing ? 'none' : 'block';
+  btn.classList.toggle('active', !showing);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  ROLE DROPDOWN  (generic)
+// ═══════════════════════════════════════════════════════════════
+const ROLE_COLORS = { DUELIST:'#E05050', CTRL:'#5090D0', SENTI:'#50A878', INI:'#C9A84C', FLEX:'#A070C0' };
+const ROLE_LABELS = { DUELIST:'Duelist', CTRL:'Controller', SENTI:'Sentinel', INI:'Initiator', FLEX:'Flex' };
+
+function toggleGenericDrop(e, menuId) {
+  e.stopPropagation();
+  document.querySelectorAll('.role-drop-menu').forEach(m => {
+    if (m.id !== menuId) m.style.display = 'none';
+  });
+  const menu = document.getElementById(menuId);
+  menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+
+function pickGenericRole(valId, lblId, val, menuId) {
+  document.getElementById(valId).value = val;
+  const lbl = document.getElementById(lblId);
+  lbl.textContent = val ? (ROLE_LABELS[val] || val) : '— None —';
+  lbl.style.color = val ? (ROLE_COLORS[val] || 'var(--text)') : 'var(--muted)';
+  document.getElementById(menuId).style.display = 'none';
+}
+
+// Wrappers for the main add-player dropdown
+function toggleRoleDrop(e)  { toggleGenericDrop(e, 'role-drop-menu'); }
+function pickRole(val) {
+  pickGenericRole('add-role', 'role-drop-label', val, 'role-drop-menu');
+  // Show/hide flex checklist
+  const cl = document.getElementById('flex-checklist');
+  if (val === 'FLEX') {
+    cl.classList.add('visible');
+  } else {
+    cl.classList.remove('visible');
+    resetFlexPills('flex-checklist');
+  }
+}
+
+function toggleFlexPill(label) {
+  const isOn = label.dataset.on === '1';
+  label.dataset.on = isOn ? '0' : '1';
+  label.classList.toggle('on', !isOn);
+}
+
+function getFlexRoles(containerId) {
+  const pills = document.querySelectorAll(`#${containerId} .flex-pill[data-on="1"]`);
+  const vals = [...pills].map(p => p.dataset.val);
+  return vals.length ? vals : null;
+}
+
+function resetFlexPills(containerId) {
+  document.querySelectorAll(`#${containerId} .flex-pill`).forEach(p => {
+    p.dataset.on = '0';
+    p.classList.remove('on');
+  });
+}
+
+// Close all on outside click
+document.addEventListener('click', () => {
+  document.querySelectorAll('.role-drop-menu').forEach(m => m.style.display = 'none');
+});
+
+// ═══════════════════════════════════════════════════════════════
+//  BULK TABS
+// ═══════════════════════════════════════════════════════════════
+function switchBulkTab(tab) {
+  ['stats','legacy'].forEach(t => {
+    document.getElementById('btab-' + t).classList.toggle('on', t === tab);
+    document.getElementById('bpane-' + t).classList.toggle('on', t === tab);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  STATS PASTE PARSER  (unlabeled: name, rating, ACS, K, D, A, KD)
+// ═══════════════════════════════════════════════════════════════
+let pendingPlayers = [];
+
+function isName(s) {
+  // A name line: not purely numeric, contains letters, optionally has #
+  return isNaN(parseFloat(s)) || s.includes('#') || /[a-zA-Z가-힣]/.test(s);
+}
+
+function parseStatsPaste(raw) {
+  const msgEl     = document.getElementById('stats-parse-msg');
+  const pendingEl = document.getElementById('stats-pending');
+
+  if (!raw.trim()) {
+    pendingEl.style.display = 'none';
+    msgEl.style.display     = 'none';
+    pendingPlayers = [];
+    return;
+  }
+
+  // Split into lines, drop empty
+  const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+
+  // Group into player blocks: each block starts with a name line
+  // followed by exactly 6 numeric values: rating, ACS, kills, deaths, assists, KD
+  const blocks = [];
+  let i = 0;
+  while (i < lines.length) {
+    if (isName(lines[i])) {
+      const name = lines[i];
+      const nums = [];
+      let j = i + 1;
+      while (j < lines.length && nums.length < 6) {
+        const v = parseFloat(lines[j]);
+        if (!isNaN(v)) { nums.push(v); j++; }
+        else if (isName(lines[j])) break; // next player
+        else j++;
+      }
+      if (nums.length >= 2) { // need at least rating + ACS
+        blocks.push({ name, nums });
+      }
+      i = j;
+    } else { i++; }
+  }
+
+  if (!blocks.length) {
+    msgEl.textContent = 'Could not detect any players — make sure each player block starts with their name.';
+    msgEl.style.display = 'block';
+    pendingEl.style.display = 'none';
+    pendingPlayers = [];
+    return;
+  }
+
+  msgEl.style.display = 'none';
+
+  // Map nums: [rating, ACS, kills, deaths, assists, KD]
+  pendingPlayers = blocks.map((b, idx) => {
+    const [rating, acs, kills, deaths, assists, kd] = b.nums;
+    const computedKd = (kills && deaths && deaths > 0) ? parseFloat((kills/deaths).toFixed(2)) : null;
+    return {
+      id: 'pp_' + idx,
+      name:    b.name,
+      acs:     acs    ?? null,
+      kd:      kd     ?? computedKd,
+      kills:   kills  ?? null,
+      deaths:  deaths ?? null,
+      assists: assists ?? null,
+      hs:      null,
+      kast:    null,
+    };
+  });
+
+  renderPendingList();
+  pendingEl.style.display = 'block';
+  document.getElementById('pending-count-lbl').textContent = `— ${pendingPlayers.length} player${pendingPlayers.length !== 1 ? 's' : ''} detected`;
+}
+
+function renderPendingList() {
+  const container = document.getElementById('pending-list');
+  container.innerHTML = pendingPlayers.map((p, idx) => {
+    const statStr = [
+      p.acs    ? `ACS ${p.acs}`    : null,
+      p.kd     ? `KD ${p.kd}`     : null,
+      (p.kills && p.deaths) ? `${p.kills}/${p.deaths}/${p.assists ?? '?'}` : null,
+    ].filter(Boolean).join('  ·  ');
+
+    const roleMenuId  = `pmenu-${p.id}`;
+    const roleLblId   = `plbl-${p.id}`;
+    const roleValId   = `pval-${p.id}`;
+    const mmrInputId  = `pmmr-${p.id}`;
+
+    return `<div class="pending-player" id="prow-${p.id}">
+      <div class="pending-info">
+        <p class="pending-name">${p.name}</p>
+        <p class="pending-stats">${statStr || 'No stats'}</p>
+      </div>
+      <div class="cfg-field" style="flex:0 0 auto;gap:4px;min-width:110px">
+        <span class="cfg-label">Role</span>
+        <div class="role-drop-wrap">
+          <button type="button" class="role-drop-btn" onclick="toggleGenericDrop(event,'${roleMenuId}')">
+            <span id="${roleLblId}" style="color:var(--muted)">— None —</span>
+            <span class="caret">▾</span>
+          </button>
+          <div class="role-drop-menu" id="${roleMenuId}" style="display:none">
+            <div class="role-drop-item" onclick="pickGenericRole('${roleValId}','${roleLblId}','','${roleMenuId}');togglePendingFlex('${p.id}',false)">— None —</div>
+            <div class="role-drop-item" onclick="pickGenericRole('${roleValId}','${roleLblId}','DUELIST','${roleMenuId}');togglePendingFlex('${p.id}',false)"><span class="role-dot" style="background:#E05050"></span>Duelist</div>
+            <div class="role-drop-item" onclick="pickGenericRole('${roleValId}','${roleLblId}','CTRL','${roleMenuId}');togglePendingFlex('${p.id}',false)"><span class="role-dot" style="background:#5090D0"></span>Controller</div>
+            <div class="role-drop-item" onclick="pickGenericRole('${roleValId}','${roleLblId}','SENTI','${roleMenuId}');togglePendingFlex('${p.id}',false)"><span class="role-dot" style="background:#50A878"></span>Sentinel</div>
+            <div class="role-drop-item" onclick="pickGenericRole('${roleValId}','${roleLblId}','INI','${roleMenuId}');togglePendingFlex('${p.id}',false)"><span class="role-dot" style="background:#C9A84C"></span>Initiator</div>
+            <div class="role-drop-item" onclick="pickGenericRole('${roleValId}','${roleLblId}','FLEX','${roleMenuId}');togglePendingFlex('${p.id}',true)"><span class="role-dot" style="background:#A070C0"></span>Flex</div>
+          </div>
+        </div>
+        <input type="hidden" id="${roleValId}" value="">
+        <div class="flex-checklist" id="pflex-${p.id}">
+          <span class="flex-checklist-label">Can play:</span>
+          <div class="flex-pill" data-val="DUELIST" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#E05050"></span>Duelist</div>
+          <div class="flex-pill" data-val="CTRL" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#5090D0"></span>Controller</div>
+          <div class="flex-pill" data-val="SENTI" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#50A878"></span>Sentinel</div>
+          <div class="flex-pill" data-val="INI" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#C9A84C"></span>Initiator</div>
+        </div>
+      </div>
+      <div class="cfg-field" style="flex:0 0 85px;gap:4px">
+        <span class="cfg-label">MMR</span>
+        <input class="cfg-input" id="${mmrInputId}" type="number" placeholder="175" min="1">
+      </div>
+      <span class="pe-del" onclick="removePending('${p.id}')" title="Remove" style="align-self:center;margin-top:14px">✕</span>
+    </div>`;
+  }).join('');
+}
+
+function togglePendingFlex(id, show) {
+  const el = document.getElementById('pflex-' + id);
+  if (el) el.classList.toggle('visible', show);
+  if (!show) resetFlexPills('pflex-' + id);
+}
+
+function removePending(id) {
+  pendingPlayers = pendingPlayers.filter(p => p.id !== id);
+  document.getElementById('prow-' + id)?.remove();
+  document.getElementById('pending-count-lbl').textContent =
+    `— ${pendingPlayers.length} player${pendingPlayers.length !== 1 ? 's' : ''} detected`;
+  if (!pendingPlayers.length) {
+    document.getElementById('stats-pending').style.display = 'none';
+  }
+}
+
+function clearPending() {
+  pendingPlayers = [];
+  document.getElementById('stats-paste-input').value = '';
+  document.getElementById('stats-pending').style.display = 'none';
+  document.getElementById('stats-parse-msg').style.display = 'none';
+}
+
+function confirmAllPending() {
+  const errEl = document.getElementById('pending-error');
+  errEl.style.display = 'none';
+
+  const errors = [];
+  const toAdd  = [];
+
+  pendingPlayers.forEach(p => {
+    const mmr  = parseInt(document.getElementById(`pmmr-${p.id}`)?.value);
+    const role = document.getElementById(`pval-${p.id}`)?.value || '—';
+    let flexRoles = null;
+    if (role === 'FLEX') {
+      flexRoles = getFlexRoles(`pflex-${p.id}`);
+    }
+    if (!mmr || mmr < 1)                       { errors.push(`${p.name}: MMR required`); return; }
+    if (PLAYERS.find(x => x.name === p.name))  { errors.push(`${p.name}: already in list`); return; }
+    toAdd.push({ name: p.name, mmr, role, acs: p.acs, kd: p.kd, flexRoles });
+  });
+
+  if (errors.length) {
+    errEl.textContent = errors.join('  ·  ');
+    errEl.style.display = 'block';
+    return;
+  }
+
+  toAdd.forEach(p => PLAYERS.push(p));
+  clearPending();
+  renderPlayerList();
+}
+
+// Keep legacy single-player pending refs harmless
+function togglePendingRoleDrop(e) {}
+function pickPendingRole(v) {}
+function confirmPending() { confirmAllPending(); }
+
+
+// ═══════════════════════════════════════════════════════════════
+//  SETUP / CONFIG
+// ═══════════════════════════════════════════════════════════════
+function getSetupValues() {
+  return {
+    tierName:   document.getElementById('cfg-tier').value.trim(),
+    cap:        parseInt(document.getElementById('cfg-cap').value)  || 820,
+    rosterSize: parseInt(document.getElementById('cfg-size').value) || 5,
+    bdeMmr:     145,
+  };
+}
+
+function addPlayer() {
+  const name = document.getElementById('add-name').value.trim();
+  const mmr  = parseInt(document.getElementById('add-mmr').value);
+  const role = document.getElementById('add-role').value.trim().toUpperCase() || '—';
+  const acs  = parseFloat(document.getElementById('add-acs').value)  || null;
+  const kd   = parseFloat(document.getElementById('add-kd').value)   || null;
+
+  let flexRoles = null;
+  if (role === 'FLEX') {
+    flexRoles = getFlexRoles('flex-checklist');
+  }
+
+  const errEl = document.getElementById('parse-error');
+  if (!name)            { errEl.textContent = 'Name is required.';   errEl.style.display = 'block'; return; }
+  if (!mmr || mmr < 1)  { errEl.textContent = 'Valid MMR required.'; errEl.style.display = 'block'; return; }
+  if (PLAYERS.find(p => p.name === name)) {
+    errEl.textContent = `"${name}" already in list.`; errEl.style.display = 'block'; return;
+  }
+  errEl.style.display = 'none';
+
+  PLAYERS.push({ name, mmr, role, acs, kd, flexRoles });
+  ['add-name','add-mmr','add-acs','add-kd'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  pickRole('');
+  renderPlayerList();
+}
+
+function parseBulk() {
+  const raw   = document.getElementById('bulk-input').value.trim();
+  const errEl = document.getElementById('bulk-error');
+  if (!raw) { errEl.textContent = 'Nothing to import.'; errEl.style.display = 'block'; return; }
+  errEl.style.display = 'none';
+
+  const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+  let added = 0, skipped = [];
+
+  lines.forEach(line => {
+    const parts = line.split(/\s+/);
+    if (parts.length < 2) { skipped.push(line); return; }
+    const name = parts[0];
+    const mmr  = parseInt(parts[1]);
+    if (!name || isNaN(mmr) || mmr < 1) { skipped.push(line); return; }
+    if (PLAYERS.find(p => p.name === name)) { skipped.push(`${name} (dup)`); return; }
+    const role = parts[2] ? parts[2].toUpperCase() : '—';
+    const acs  = parts[3] ? parseFloat(parts[3]) : null;
+    const kd   = parts[4] ? parseFloat(parts[4]) : null;
+    const hs   = parts[5] ? parseFloat(parts[5]) : null;
+    const kast = parts[6] ? parseFloat(parts[6]) : null;
+    PLAYERS.push({ name, mmr, role, acs, kd, hs, kast });
+    added++;
+  });
+
+  if (skipped.length) {
+    errEl.textContent = `Imported ${added}. Skipped: ${skipped.join(', ')}`;
+    errEl.style.display = 'block';
+  }
+  if (added > 0) {
+    document.getElementById('bulk-input').value = '';
+    renderPlayerList();
+  }
+}
+
+function removePlayer(name) {
+  PLAYERS = PLAYERS.filter(p => p.name !== name);
+  selected.delete(name);
+  renderPlayerList();
+}
+
+function clearPlayers() {
+  if (!confirm('Clear all players?')) return;
+  PLAYERS  = [];
+  selected = new Set();
+  renderPlayerList();
+}
+
+function renderPlayerList() {
+  const el  = document.getElementById('player-entry-list');
+  const lbl = document.getElementById('player-count-lbl');
+  lbl.textContent = PLAYERS.length ? `— ${PLAYERS.length} player${PLAYERS.length !== 1 ? 's' : ''}` : '';
+  if (!PLAYERS.length) { el.innerHTML = '<div class="no-players-msg">No players added yet</div>'; return; }
+
+  el.innerHTML = PLAYERS.map(p => `
+    <div class="pentry">
+      <span class="pe-name">${p.name}</span>
+      <span class="pe-mmr">${p.mmr} MMR</span>
+      <span class="pe-role">${p.role}${p.flexRoles ? ` (${p.flexRoles.map(r => ROLE_LABELS[r]||r).join('/')})` : ''}</span>
+      <span class="pe-stats">
+        ${[p.acs ? `ACS:${p.acs}` : '', p.kd ? `KD:${p.kd}` : ''].filter(Boolean).join('  ') || '—'}
+      </span>
+      <span class="pe-del" onclick="removePlayer('${p.name.replace(/'/g, "\\'")}')" title="Remove">✕</span>
+    </div>
+  `).join('');
+}
+
+function applyConfig() {
+  CFG = getSetupValues();
+  selected = new Set();
+
+  const tierDisplay = CFG.tierName || 'Roster';
+  document.getElementById('page-title').textContent   = CFG.tierName ? `${CFG.tierName} — Roster Builder` : 'Roster Builder';
+  document.getElementById('page-sub').textContent     = `Cap: ${CFG.cap} MMR · Max ${CFG.rosterSize} players`;
+  document.getElementById('tier-badge').textContent   = CFG.tierName ? CFG.tierName.toUpperCase() : 'CONFIGURED';
+  document.getElementById('cap-display').textContent  = CFG.cap;
+  document.getElementById('cap-count').textContent    = `0/${CFG.rosterSize}`;
+  document.getElementById('builder-section-lbl').textContent = tierDisplay + ' Roster';
+
+  refreshBuilderPLTBar();
+  buildGrid();
+  renderAll();
+  renderRanked();
+  // Show tabs
+  ['tab-builder','tab-all','tab-ranked','tab-roles','tab-duos'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.display = ''; el.classList.remove('locked'); }
+  });
+  sw('builder', document.getElementById('tab-builder'));
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+//  COMBO GENERATION
+// ═══════════════════════════════════════════════════════════════
+function genCombos() {
+  const size    = CFG.rosterSize;
+  const combos  = [];
+  const players = allPlayersWithPLT();
+  if (players.length < size) return combos;
+
+  function combine(start, current) {
+    if (current.length === size) {
+      const total        = current.reduce((s, p) => s + p.mmr, 0);
+      const valid        = total <= CFG.cap;
+      const hasPLT       = current.some(p => p.isPLT);
+      const statsPlayers = current.filter(p => p.acs != null && p.kd != null);
+      const hasStats     = statsPlayers.length > 0;
+      const avgAcs  = hasStats ? statsPlayers.reduce((s, p) => s + p.acs, 0) / statsPlayers.length : 0;
+      const avgKd   = hasStats ? statsPlayers.reduce((s, p) => s + p.kd,  0) / statsPlayers.length : 0;
+      const score   = avgAcs * 0.6 + avgKd * 50 * 0.4;
+      const names    = current.map(p => p.name);
+      const duoCount    = DUOS.filter(d => names.includes(d.a) && names.includes(d.b)).length;
+      const badDuoCount = BAD_DUOS.filter(d => names.includes(d.a) && names.includes(d.b)).length;
+      const duoBoost = duoCount;
+      combos.push({ team: [...current], total, valid, rem: CFG.cap - total, avgAcs, avgKd, score, duoBoost, badDuoCount, hasPLT, hasStats });
+      return;
+    }
+    for (let i = start; i < players.length; i++) {
+      combine(i + 1, [...current, players[i]]);
+    }
+  }
+  combine(0, []);
+  return combos;
+}
+
+function getValidCombos() {
+  return genCombos().filter(c => {
+    if (!c.valid) return false;
+    // Every locked player must be in the combo
+    for (const name of LOCKED_PLAYERS) {
+      if (!c.team.some(p => p.name === name)) return false;
+    }
+    return true;
+  }).sort((a, b) => a.rem - b.rem);
+}
+
+function grade(score, min, max) {
+  if (max === min) return { c: 's-b', l: 'B' };
+  const pct = (score - min) / (max - min);
+  if (pct >= 0.75) return { c: 's-s', l: 'S' };
+  if (pct >= 0.45) return { c: 's-a', l: 'A' };
+  if (pct >= 0.20) return { c: 's-b', l: 'B' };
+  return { c: 's-c', l: 'C' };
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+//  BUILDER
+// ═══════════════════════════════════════════════════════════════
+function buildGrid() {
+  const grid  = document.getElementById('roster-grid');
+  const empty = document.getElementById('builder-empty');
+
+  if (!PLAYERS.length && !PROMO_PLAYERS.length) {
+    grid.innerHTML     = '';
+    grid.style.display = 'none';
+    empty.style.display = 'block';
+    updateCap();
+    return;
+  }
+
+  grid.style.display  = 'grid';
+  empty.style.display = 'none';
+
+  const pool         = allPlayersWithPLT();
+  const currentTotal = [...selected].reduce((s, n) => {
+    const p = pool.find(x => x.name === n);
+    return s + (p?.mmr || 0);
+  }, 0);
+
+  grid.innerHTML = pool.map(p => {
+    const isSel       = selected.has(p.name);
+    const wouldTotal  = currentTotal + (isSel ? 0 : p.mmr);
+    const wouldOver   = !isSel && selected.size >= CFG.rosterSize;
+    const wouldCapOver = !isSel && wouldTotal > CFG.cap;
+    const isDisabled  = !isSel && (wouldOver || wouldCapOver);
+
+    let cls = '';
+    if      (p.isPLT && isSel) cls = 'selected bde-active';
+    else if (p.isPLT)          cls = 'plt-card' + (isDisabled ? ' disabled' : '');
+    else if (isSel)            cls = 'selected';
+    else if (isDisabled)       cls = 'disabled';
+
+    const nameDisplay = p.isPLT ? (p.label || 'Promo Player') : p.name;
+    const roleDisplay = p.isPLT ? 'PROMO · LOWER TIER'        : p.role;
+
+    return `<div class="player-card ${cls}" onclick="handleCardClick('${p.name.replace(/'/g, "\\'")}')">
+      <div class="badge-corner">${p.isPLT ? '<span style="color:var(--gold);font-size:8px">PLT</span>' : ''}</div>
+      <p class="pname" style="${p.isPLT ? 'color:var(--gold)' : ''}">${nameDisplay}</p>
+      <p class="pmmr">${p.mmr} MMR</p>
+      <p class="prole" style="${p.isPLT ? 'color:rgba(201,168,76,0.6)' : ''}">${roleDisplay}</p>
+    </div>`;
+  }).join('');
+
+  updateCap();
+}
+
+function handleCardClick(name) {
+  const pool = allPlayersWithPLT();
+  const p    = pool.find(x => x.name === name);
+  if (!p) return;
+
+  if (selected.has(name)) {
+    selected.delete(name);
+  } else {
+    if (selected.size >= CFG.rosterSize) return;
+    const addTotal = [...selected].reduce((s, n) => {
+      const pl = pool.find(x => x.name === n);
+      return s + (pl?.mmr || 0);
+    }, 0) + p.mmr;
+    if (addTotal <= CFG.cap) selected.add(name);
+  }
+  buildGrid();
+}
+
+function updateCap() {
+  const pool  = allPlayersWithPLT();
+  const total = [...selected].reduce((s, n) => {
+    const p = pool.find(x => x.name === n);
+    return s + (p?.mmr || 0);
+  }, 0);
+  const rem = CFG.cap - total;
+  const pct = (total / CFG.cap) * 100;
+  const col = pct >= 100 ? '#C07070' : pct >= 95 ? '#BA7517' : pct >= 85 ? '#C9A84C' : 'var(--green)';
+
+  document.getElementById('cap-used').textContent  = total || 0;
+  document.getElementById('cap-used').style.color  = pct >= 100 ? '#C07070' : 'var(--text)';
+  document.getElementById('cap-rem').textContent   = total ? rem : '—';
+  document.getElementById('cap-rem').style.color   = rem < 0 ? '#C07070' : rem <= 20 ? '#C9A84C' : 'var(--text)';
+  document.getElementById('cap-count').textContent = `${selected.size}/${CFG.rosterSize}`;
+  document.getElementById('cap-fill').style.width  = Math.min(100, pct || 0) + '%';
+  document.getElementById('cap-fill').style.background = col;
+
+  const status = document.getElementById('cap-status');
+  if (total > CFG.cap) {
+    status.textContent = '✗ Over cap';   status.style.color = '#C07070';
+  } else if (selected.size === CFG.rosterSize && total <= CFG.cap) {
+    status.textContent = '✓ Valid roster'; status.style.color = 'var(--green)';
+  } else if (!selected.size) {
+    status.textContent = '—';            status.style.color = 'var(--muted)';
+  } else {
+    status.textContent = `Need ${CFG.rosterSize - selected.size} more`; status.style.color = 'var(--muted)';
+  }
+
+  const names = [...selected].map(n => {
+    const p = pool.find(x => x.name === n);
+    const lbl = p?.isPLT ? (p.label || 'Promo Player') : n;
+    return `${lbl} (${p?.mmr || 0})`;
+  });
+  document.getElementById('sel-display').textContent = names.length ? names.join(' · ') : 'No players selected';
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+//  ALL COMBOS
+// ═══════════════════════════════════════════════════════════════
+function sortAll(k)   { if (allSort === k) allDir *= -1; else { allSort = k; allDir = 1; } renderAll(); }
+function filterAll(v) { allFilter = v.toLowerCase(); renderAll(); }
+
+function renderAll() {
+  if (!PLAYERS.length && !PROMO_PLAYERS.length) {
+    document.getElementById('all-info').innerHTML     = 'Configure players in the <strong>Setup</strong> tab first.';
+    document.getElementById('all-body').innerHTML     = '';
+    document.getElementById('combo-count').textContent = '';
+    return;
+  }
+
+  document.getElementById('all-info').innerHTML = `All valid ${CFG.rosterSize}-player combos under <strong>${CFG.cap} MMR</strong>. Sorted by cap efficiency. PLT = Promo Lower Tier.`;
+
+  const combos = getValidCombos();
+  let list = allFilter
+    ? combos.filter(c => c.team.some(p => (p.isPLT ? (p.label || 'promo player') : p.name).toLowerCase().includes(allFilter)))
+    : combos;
+
+  list = [...list].sort((a, b) => {
+    if (allSort === 'rank') {
+      // Bad duos always go below clean combos
+      if (a.badDuoCount !== b.badDuoCount) return a.badDuoCount - b.badDuoCount;
+      const remDiff = allDir < 0 ? b.rem - a.rem : a.rem - b.rem;
+      return remDiff !== 0 ? remDiff : b.duoBoost - a.duoBoost;
+    }
+    return allDir * (b[allSort] - a[allSort]);
+  });
+  list.forEach((c, i) => c.rank = i + 1);
+
+  document.getElementById('combo-count').textContent =
+    `${list.length} valid roster${list.length !== 1 ? 's' : ''} under ${CFG.cap} MMR`;
+
+  document.getElementById('all-body').innerHTML = list.map((c, i) => {
+    const names = c.team.map(p =>
+      `<span class="tag" style="background:${p.isPLT ? 'rgba(201,168,76,0.15)' : 'var(--dark3)'};color:${p.isPLT ? 'var(--gold)' : 'var(--text)'}">${p.isPLT ? (p.label || 'Promo Player') : p.name}</span>`
+    ).join('');
+    const remCol = c.rem <= 5 ? '#C07070' : c.rem <= 20 ? '#C9A84C' : '#7DB87D';
+    const rowStyle = c.badDuoCount ? 'opacity:0.6' : '';
+    return `<tr style="${rowStyle}">
+      <td style="color:var(--muted);font-family:'DM Mono',monospace;font-size:11px">${i + 1}</td>
+      <td>${names}${duoTag(c)}${badDuoTag(c)}</td>
+      <td style="font-family:'DM Mono',monospace;font-weight:500">${c.total}</td>
+      <td style="font-family:'DM Mono',monospace;color:${remCol}">${c.rem}</td>
+      <td style="font-family:'DM Mono',monospace;color:${c.avgAcs >= 220 ? '#7DB87D' : 'inherit'}">${c.hasStats ? c.avgAcs.toFixed(1) : '—'}</td>
+      <td style="font-family:'DM Mono',monospace;color:${c.avgKd >= 1.1 ? '#7DB87D' : c.avgKd < 1 ? '#C07070' : 'inherit'}">${c.hasStats ? c.avgKd.toFixed(2) : '—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+//  RANKED
+// ═══════════════════════════════════════════════════════════════
+function sortRanked(k) { if (rankSort === k) rankDir *= -1; else { rankSort = k; rankDir = 1; } renderRanked(); }
+
+function renderRanked() {
+  if (!PLAYERS.length && !PROMO_PLAYERS.length) {
+    document.getElementById('ranked-body').innerHTML = '<tr><td colspan="7" class="no-players-msg">Configure players in the Setup tab first.</td></tr>';
+    return;
+  }
+
+  const combos = getValidCombos().filter(c => c.hasStats);
+  const sorted = [...combos].sort((a, b) => rankDir * (duoBoostedScore(b) - duoBoostedScore(a)));
+
+  if (!sorted.length) {
+    document.getElementById('ranked-body').innerHTML = '<tr><td colspan="7" class="no-players-msg">No valid combos with stats — add ACS/KD data in Setup.</td></tr>';
+    return;
+  }
+
+  const scores = sorted.map(c => duoBoostedScore(c));
+  const minScore = Math.min(...scores), maxScore = Math.max(...scores);
+
+  document.getElementById('ranked-body').innerHTML = sorted.map((c, i) => {
+    const g     = grade(duoBoostedScore(c), minScore, maxScore);
+    const names = c.team.map(p =>
+      `<span class="tag" style="background:${p.isPLT ? 'rgba(201,168,76,0.15)' : 'var(--dark3)'};color:${p.isPLT ? 'var(--gold)' : 'var(--text)'}">${p.isPLT ? (p.label || 'Promo Player') : p.name}</span>`
+    ).join('');
+    return `<tr class="${i === 0 ? 'best' : ''}" style="${c.badDuoCount ? 'opacity:0.6' : ''}">
+      <td style="color:var(--muted);font-family:'DM Mono',monospace;font-size:11px">${i === 0 ? '⭐' : i + 1}</td>
+      <td>${names}${duoTag(c)}${badDuoTag(c)}</td>
+      <td style="font-family:'DM Mono',monospace">${c.total}</td>
+      <td style="font-family:'DM Mono',monospace;color:${c.avgAcs >= 220 ? '#7DB87D' : 'inherit'}">${c.avgAcs.toFixed(1)}</td>
+      <td style="font-family:'DM Mono',monospace;color:${c.avgKd >= 1.1 ? '#7DB87D' : c.avgKd < 1 ? '#C07070' : 'inherit'}">${c.avgKd.toFixed(2)}</td>
+      <td style="font-family:'DM Mono',monospace;font-weight:500">${duoBoostedScore(c).toFixed(1)}</td>
+      <td><span class="bx ${g.c}">${g.l}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+//  ROLE BREAKDOWN
+// ═══════════════════════════════════════════════════════════════
+const ROLE_MAP = {
+  DUELIST:'duelist', DUEL:'duelist', DUP:'duelist',
+  CTRL:'controller', CONTROLLER:'controller', CONT:'controller',
+  SENTI:'sentinel',  SENTINEL:'sentinel',     SENT:'sentinel',
+  INI:'initiator',   INITIATOR:'initiator',   INIT:'initiator',
+  FLEX:'flex',
+};
+
+function canonRole(r) { return ROLE_MAP[(r||'').toUpperCase()] || null; }
+
+function getRoleCounts(team) {
+  const counts = { duelist:0, controller:0, sentinel:0, initiator:0, flex:0 };
+  team.forEach(p => {
+    if (!p.isPLT) { const c = canonRole(p.role); if (c) counts[c]++; }
+  });
+  return counts;
+}
+
+// Flex satisfies role slots — but respects flexRoles restrictions if set
+function satisfiesComp(team, req) {
+  const total = Object.values(req).reduce((a,b)=>a+b,0);
+  if (total === 0) return true;
+
+  const dedicated = { duelist:0, controller:0, sentinel:0, initiator:0 };
+  // flexPool: array of {canFill: Set of roles} for each flex player
+  const flexPool = [];
+
+  team.forEach(p => {
+    if (p.isPLT) return;
+    const c = canonRole(p.isPLT ? '—' : p.role);
+    if (c === 'flex') {
+      // If flexRoles set, they can only fill those specific roles; otherwise any
+      const canFill = p.flexRoles
+        ? new Set(p.flexRoles.map(r => canonRole(r)).filter(Boolean))
+        : new Set(['duelist','controller','sentinel','initiator']);
+      flexPool.push(canFill);
+    } else if (c) {
+      dedicated[c]++;
+    }
+  });
+
+  // Greedy: for each required role, fill with dedicated first, then try flex
+  const unmet = {};
+  for (const role of ['duelist','controller','sentinel','initiator']) {
+    const need = req[role] || 0;
+    const have = dedicated[role];
+    if (have < need) unmet[role] = need - have;
+  }
+
+  if (Object.keys(unmet).length === 0) return true;
+
+  // Try to assign flex players to unmet roles
+  const usedFlex = new Set();
+  for (const [role, count] of Object.entries(unmet)) {
+    let filled = 0;
+    for (let i = 0; i < flexPool.length; i++) {
+      if (usedFlex.has(i)) continue;
+      if (flexPool[i].has(role)) {
+        usedFlex.add(i);
+        filled++;
+        if (filled >= count) break;
+      }
+    }
+    if (filled < count) return false;
+  }
+  return true;
+}
+
+const roleReq = { duelist:0, controller:0, sentinel:0, initiator:0 };
+let rolesSort = 'rem', rolesDir = 1;
+
+function stepRole(role, delta) {
+  const total = Object.values(roleReq).reduce((a,b)=>a+b,0);
+  const next  = roleReq[role] + delta;
+  if (next < 0) return;
+  if (delta > 0 && total >= CFG.rosterSize) return;
+  roleReq[role] = next;
+  updateRolePickerUI();
+  renderRoles();
+}
+
+function resetRolePicker() {
+  Object.keys(roleReq).forEach(k => roleReq[k] = 0);
+  updateRolePickerUI();
+  renderRoles();
+}
+
+function updateRolePickerUI() {
+  const total = Object.values(roleReq).reduce((a,b)=>a+b,0);
+  Object.keys(roleReq).forEach(k => {
+    const el = document.getElementById('rc-' + k);
+    if (el) el.textContent = roleReq[k];
+  });
+  const lbl = document.getElementById('role-total-lbl');
+  if (lbl) {
+    lbl.textContent = `Total: ${total} / ${CFG.rosterSize}`;
+    lbl.style.color = total === CFG.rosterSize ? 'var(--green)' : total > CFG.rosterSize ? 'var(--red-err)' : 'var(--muted)';
+  }
+  const err = document.getElementById('role-picker-error');
+  if (err) {
+    err.style.display = total > CFG.rosterSize ? 'block' : 'none';
+    if (total > CFG.rosterSize) err.textContent = `Total exceeds roster size of ${CFG.rosterSize}.`;
+  }
+}
+
+function sortRoles(k) { if (rolesSort===k) rolesDir*=-1; else { rolesSort=k; rolesDir=1; } renderRoles(); }
+
+function renderRoles() {
+  if (!PLAYERS.length && !PROMO_PLAYERS.length) {
+    document.getElementById('roles-info').innerHTML = 'Configure players in the <strong>Setup</strong> tab first.';
+    document.getElementById('roles-body').innerHTML = '';
+    document.getElementById('roles-count').textContent = '';
+    return;
+  }
+
+  const total  = Object.values(roleReq).reduce((a,b)=>a+b,0);
+  const active = total > 0 && total <= CFG.rosterSize;
+  const roleColors = { duelist:'#E05050', controller:'#5090D0', sentinel:'#50A878', initiator:'#C9A84C', flex:'#A070C0' };
+
+  document.getElementById('roles-info').innerHTML = active
+    ? 'Showing combos that match: ' + Object.entries(roleReq).filter(([,v])=>v>0)
+        .map(([k,v])=>`<strong style="color:${roleColors[k]}">${v} ${k}</strong>`).join(', ') +
+        ' <span style="color:var(--muted);font-size:10px">(Flex counts toward any role)</span>'
+    : `Set a comp above to filter valid rosters. Flex players fill any role slot.`;
+
+  let combos = getValidCombos();
+  if (active) combos = combos.filter(c => satisfiesComp(c.team, roleReq));
+
+  combos = [...combos].sort((a,b) => {
+    if (rolesSort==='rem'||rolesSort==='total') return rolesDir*(b[rolesSort]-a[rolesSort]);
+    return rolesDir*(getRoleCounts(b.team)[rolesSort]||0) - (getRoleCounts(a.team)[rolesSort]||0);
+  });
+
+  document.getElementById('roles-count').textContent =
+    `${combos.length} roster${combos.length!==1?'s':''} match${combos.length===1?'es':''} this comp`;
+
+  document.getElementById('roles-body').innerHTML = combos.map((c,i) => {
+    const rc    = getRoleCounts(c.team);
+    const names = c.team.map(p => {
+      const col = p.isPLT ? 'var(--gold)' : (roleColors[canonRole(p.role)] || 'var(--muted)');
+      const lbl = p.isPLT ? (p.label||'Promo Player') : p.name;
+      return `<span class="tag" style="background:${p.isPLT?'rgba(201,168,76,0.15)':'var(--dark3)'};color:${col}">${lbl}</span>`;
+    }).join('');
+    const remCol = c.rem<=5?'#C07070':c.rem<=20?'#C9A84C':'#7DB87D';
+
+    function rcell(key) {
+      const n = rc[key]||0;
+      const needed = roleReq[key]||0;
+      const ok = !active || n >= needed;
+      return `<td style="font-family:'DM Mono',monospace;text-align:center;font-weight:${n?'500':'300'};color:${n?(ok?roleColors[key]:'var(--muted)'):'var(--border2)'}">${n||'—'}</td>`;
+    }
+
+    return `<tr>
+      <td style="color:var(--muted);font-family:'DM Mono',monospace;font-size:11px">${i+1}</td>
+      <td>${names}${duoTag(c)}${badDuoTag(c)}</td>
+      <td style="font-family:'DM Mono',monospace;font-weight:500">${c.total}</td>
+      <td style="font-family:'DM Mono',monospace;color:${remCol}">${c.rem}</td>
+      ${rcell('duelist')}${rcell('controller')}${rcell('sentinel')}${rcell('initiator')}${rcell('flex')}
+    </tr>`;
+  }).join('') || '<tr><td colspan="9" class="no-players-msg">No combos match this comp.</td></tr>';
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+//  DUOS & LOCKED PLAYERS
+// ═══════════════════════════════════════════════════════════════
+const DUO_BOOST_PER_PAIR = 3;
+const BAD_DUO_PENALTY    = 8;
+
+function duoBoostedScore(c) {
+  return c.score + c.duoBoost * DUO_BOOST_PER_PAIR - (c.badDuoCount||0) * BAD_DUO_PENALTY;
+}
+
+function duoTag(c) {
+  if (!c.duoBoost) return '';
+  return DUOS
+    .filter(d => { const n=c.team.map(p=>p.name); return n.includes(d.a)&&n.includes(d.b); })
+    .map(d=>`<span style="font-size:9px;font-family:'DM Mono',monospace;padding:1px 5px;border-radius:3px;background:rgba(100,180,120,0.12);color:#6ab478;margin-left:3px">\u2665 ${d.a.split('#')[0]}+${d.b.split('#')[0]}</span>`)
+    .join('');
+}
+
+function badDuoTag(c) {
+  if (!c.badDuoCount) return '';
+  return BAD_DUOS
+    .filter(d => { const n=c.team.map(p=>p.name); return n.includes(d.a)&&n.includes(d.b); })
+    .map(d=>`<span style="font-size:9px;font-family:'DM Mono',monospace;padding:1px 5px;border-radius:3px;background:rgba(200,80,80,0.12);color:#C07070;margin-left:3px">\u2715 ${d.a.split('#')[0]}+${d.b.split('#')[0]}</span>`)
+    .join('');
+}
+
+function populateDuoDrops() {
+  const allP = allPlayersWithPLT().filter(p=>!p.isPLT);
+  ['duo-a','duo-b','badduo-a','badduo-b','lock'].forEach(id => {
+    const menu = document.getElementById(`${id}-menu`);
+    if (!menu) return;
+    menu.innerHTML = allP.map(p =>
+      `<div class="role-drop-item" onclick="pickGenericRole('${id}-val','${id}-label','${p.name.replace(/'/g,"\\'")}','${id}-menu')">${p.name}</div>`
+    ).join('') || '<div class="role-drop-item" style="color:var(--muted)">No players yet</div>';
+  });
+}
+
+function validateDuoPick(aId, bId, errId, list) {
+  const a=document.getElementById(`${aId}-val`).value, b=document.getElementById(`${bId}-val`).value;
+  const errEl=document.getElementById(errId);
+  if(!a||!b){errEl.textContent='Select both players.';errEl.style.display='block';return null;}
+  if(a===b){errEl.textContent='Pick two different players.';errEl.style.display='block';return null;}
+  if(list.find(d=>(d.a===a&&d.b===b)||(d.a===b&&d.b===a))){errEl.textContent='Already linked.';errEl.style.display='block';return null;}
+  errEl.style.display='none'; return {a,b};
+}
+
+function resetDuoPicker(aId, bId) {
+  ['a','b'].forEach((s,i)=>{
+    const id=[aId,bId][i];
+    pickGenericRole(`${id}-val`,`${id}-label`,'',`${id}-menu`);
+    document.getElementById(`${id}-label`).textContent='Select player\u2026';
+  });
+}
+
+// GOOD DUOS
+function addDuo() {
+  const pair=validateDuoPick('duo-a','duo-b','duo-error',DUOS); if(!pair) return;
+  DUOS.push(pair); resetDuoPicker('duo-a','duo-b');
+  renderDuoList(); rerenderCombos();
+}
+function removeDuo(idx){ DUOS.splice(idx,1); renderDuoList(); rerenderCombos(); }
+function renderDuoList() {
+  const el=document.getElementById('duo-list-container');
+  el.innerHTML = !DUOS.length
+    ? '<p style="font-size:11px;color:var(--muted);font-family:\'DM Mono\',monospace;font-style:italic">No good duos linked yet.</p>'
+    : `<div style="display:flex;flex-direction:column;gap:6px">${DUOS.map((d,i)=>`
+      <div class="pentry" style="border-color:rgba(100,180,120,0.25)">
+        <span class="pe-name" style="color:#6ab478">\u2665</span>
+        <span class="pe-name">${d.a}</span>
+        <span style="color:var(--muted);font-family:'DM Mono',monospace;font-size:11px">+</span>
+        <span class="pe-name">${d.b}</span>
+        <span class="pe-del" onclick="removeDuo(${i})">\u2715</span>
+      </div>`).join('')}</div>`;
+}
+
+// BAD DUOS
+function addBadDuo() {
+  const pair=validateDuoPick('badduo-a','badduo-b','badduo-error',BAD_DUOS); if(!pair) return;
+  BAD_DUOS.push(pair); resetDuoPicker('badduo-a','badduo-b');
+  renderBadDuoList(); rerenderCombos();
+}
+function removeBadDuo(idx){ BAD_DUOS.splice(idx,1); renderBadDuoList(); rerenderCombos(); }
+function renderBadDuoList() {
+  const el=document.getElementById('badduo-list-container');
+  el.innerHTML = !BAD_DUOS.length
+    ? '<p style="font-size:11px;color:var(--muted);font-family:\'DM Mono\',monospace;font-style:italic">No bad duos linked yet.</p>'
+    : `<div style="display:flex;flex-direction:column;gap:6px">${BAD_DUOS.map((d,i)=>`
+      <div class="pentry" style="border-color:rgba(200,80,80,0.25)">
+        <span class="pe-name" style="color:#C07070">\u2715</span>
+        <span class="pe-name">${d.a}</span>
+        <span style="color:var(--muted);font-family:'DM Mono',monospace;font-size:11px">+</span>
+        <span class="pe-name">${d.b}</span>
+        <span class="pe-del" onclick="removeBadDuo(${i})">\u2715</span>
+      </div>`).join('')}</div>`;
+}
+
+// LOCKED PLAYERS
+function lockPlayer() {
+  const val=document.getElementById('lock-val').value;
+  const errEl=document.getElementById('lock-error');
+  if(!val){errEl.textContent='Select a player.';errEl.style.display='block';return;}
+  if(LOCKED_PLAYERS.has(val)){errEl.textContent='Already locked.';errEl.style.display='block';return;}
+  if(LOCKED_PLAYERS.size>=CFG.rosterSize-1){errEl.textContent=`Can\'t lock more than ${CFG.rosterSize-1} players.`;errEl.style.display='block';return;}
+  errEl.style.display='none';
+  LOCKED_PLAYERS.add(val);
+  pickGenericRole('lock-val','lock-label','','lock-menu');
+  document.getElementById('lock-label').textContent='Select player\u2026';
+  renderLockList(); rerenderCombos();
+}
+function unlockPlayer(name){ LOCKED_PLAYERS.delete(name); renderLockList(); rerenderCombos(); }
+function renderLockList() {
+  const el=document.getElementById('lock-list-container');
+  const arr=[...LOCKED_PLAYERS];
+  el.innerHTML = !arr.length
+    ? '<p style="font-size:11px;color:var(--muted);font-family:\'DM Mono\',monospace;font-style:italic">No players locked yet.</p>'
+    : `<div style="display:flex;flex-direction:column;gap:6px">${arr.map(name=>`
+      <div class="pentry" style="border-color:rgba(201,168,76,0.3)">
+        <span style="color:var(--gold);font-size:13px">\uD83D\uDD12</span>
+        <span class="pe-name">${name}</span>
+        <span style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;flex:1">must appear in every combo</span>
+        <span class="pe-del" onclick="unlockPlayer('${name.replace(/'/g,"\\'")}')">\u2715</span>
+      </div>`).join('')}</div>`;
+}
+
+function rerenderCombos() { renderAll(); renderRanked(); renderRoles(); }
+
+function renderDuos() {
+  populateDuoDrops();
+  renderDuoList(); renderBadDuoList(); renderLockList();
+}
+
+//  TAB SWITCH
+// ═══════════════════════════════════════════════════════════════
+function sw(id, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('p-' + id).classList.add('on');
+  if (id === 'all')    renderAll();
+  if (id === 'ranked') renderRanked();
+  if (id === 'roles')  { updateRolePickerUI(); renderRoles(); }
+  if (id === 'duos')   renderDuos();
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════════
+refreshBuilderPLTBar();
+buildGrid();
+renderAll();
+renderRanked();
+
+// ═══════════════════════════════════════════════════════════════
+//  THEME TOGGLE
+// ═══════════════════════════════════════════════════════════════
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light');
+  document.getElementById('theme-lbl').textContent = isLight ? 'Dark' : 'Light';
+}
+</script>
+</body>
+</html>
