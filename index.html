@@ -367,7 +367,53 @@
     input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
     input[type=number] { -moz-appearance: textfield; appearance: textfield; }
 
-    /* ─── HELP TOOLTIP ──────────────────────────────────────── */
+    /* ─── DISCORD COPY BUTTON ───────────────────────────────── */
+    .discord-copy-btn {
+      padding: 6px 14px;
+      border-radius: 4px;
+      border: 1px solid rgba(88,101,242,0.4);
+      background: rgba(88,101,242,0.1);
+      color: #8891f2;
+      font-size: 12px;
+      font-family: 'DM Mono', monospace;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .2s;
+      white-space: nowrap;
+    }
+    .discord-copy-btn:hover { background: rgba(88,101,242,0.2); border-color: rgba(88,101,242,0.6); }
+    .discord-copy-btn.copied { border-color: rgba(74,180,74,0.4); background: rgba(74,180,74,0.1); color: var(--green); }
+
+    .header-action-btn {
+      padding: 6px 14px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: var(--dark3);
+      color: var(--muted);
+      font-size: 12px;
+      font-family: 'DM Mono', monospace;
+      cursor: pointer;
+      transition: all .2s;
+      white-space: nowrap;
+    }
+    .header-action-btn:hover { color: var(--text); border-color: var(--border2); }
+
+    /* ─── SETTINGS GEAR BUTTON ──────────────────────────────── */
+    .settings-gear-btn {
+      display: none;
+      width: 32px; height: 32px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: var(--dark3);
+      color: var(--muted);
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      transition: all .2s, transform .3s;
+      flex-shrink: 0;
+    }
+    .settings-gear-btn:hover { color: var(--text); border-color: var(--border2); transform: rotate(45deg); }
+    .settings-gear-btn.active { color: var(--red); border-color: rgba(224,48,48,0.4); background: rgba(224,48,48,0.08); }
     .help-trigger {
       display: inline-flex; align-items: center; justify-content: center;
       width: 16px; height: 16px; border-radius: 50%;
@@ -823,12 +869,20 @@
       <h1 id="page-title">Roster Builder</h1>
       <p id="page-sub">Configure your tier, cap, and players in the Setup tab</p>
     </div>
-    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
       <span class="tier-badge" id="tier-badge">UNCONFIGURED</span>
-      <div class="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode">
-        <div class="toggle-track"><div class="toggle-thumb"></div></div>
-        <span id="theme-lbl">Light</span>
-      </div>
+      <button class="discord-copy-btn" id="discord-copy-btn" onclick="copyForDiscord()" title="Copy roster for Discord" style="display:none">
+        📋 Copy for Discord
+      </button>
+      <button class="header-action-btn" id="header-export-btn" onclick="exportConfig()" title="Export session" style="display:none">
+        ↓ Export
+      </button>
+      <button class="settings-gear-btn" id="settings-gear-btn" onclick="sw('settings', document.getElementById('tab-settings'))" title="Settings">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
     </div>
   </div>
 
@@ -843,6 +897,12 @@
     <div class="tab" id="tab-ranked"  onclick="sw('ranked',  this)" style="display:none">Best by Stats</div>
     <div class="tab" id="tab-roles"   onclick="sw('roles',   this)" style="display:none">Role Breakdown</div>
     <div class="tab" id="tab-duos"    onclick="sw('duos',    this)" style="display:none">Intangibles</div>
+    <div class="tab" id="tab-settings" onclick="sw('settings', this)" style="margin-left:auto;display:flex;align-items:center;padding:8px 12px">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </div>
   </div>
 
   <!-- ══════════════════════════════════════════════════════════ -->
@@ -1026,9 +1086,13 @@
       </div>
 
       <div class="config-row" style="margin-top: 12px; justify-content: flex-end; gap: 8px">
+        <button class="cfg-btn secondary" onclick="importConfig()">↑ Import</button>
+        <button class="cfg-btn secondary" onclick="exportConfig()">↓ Export</button>
         <button class="cfg-btn secondary" onclick="clearPlayers()">Clear All</button>
         <button class="cfg-btn"           onclick="applyConfig()">Apply &amp; Build ▶</button>
       </div>
+      <!-- Hidden file input for import -->
+      <input type="file" id="import-file-input" accept=".json" style="display:none" onchange="handleImportFile(this)">
     </div>
 
     <!-- Player List -->
@@ -1341,6 +1405,76 @@
 
   </div><!-- /p-duos -->
 
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!--  SETTINGS PANEL                                           -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <div class="panel" id="p-settings">
+
+    <div class="config-panel" style="margin-bottom:14px">
+      <p class="section-lbl">Appearance</p>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <div>
+          <p style="font-size:12px;color:var(--text);margin-bottom:4px">Theme</p>
+          <p style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">Switch between dark and light mode</p>
+        </div>
+        <div class="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode" style="margin-left:auto">
+          <div class="toggle-track"><div class="toggle-thumb"></div></div>
+          <span id="theme-lbl">Light</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="config-panel" style="margin-bottom:14px">
+      <p class="section-lbl">Behaviour</p>
+
+      <!-- Auto apply on import -->
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:14px">
+        <div>
+          <p style="font-size:12px;color:var(--text);margin-bottom:4px">Auto-apply on import</p>
+          <p style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">Automatically hit Apply & Build after importing a JSON file</p>
+        </div>
+        <div class="theme-toggle" onclick="toggleSetting('autoApply')" id="setting-autoApply-toggle" style="margin-left:auto">
+          <div class="toggle-track"><div class="toggle-thumb"></div></div>
+          <span id="setting-autoApply-lbl">Off</span>
+        </div>
+      </div>
+
+      <!-- Confirm before clear -->
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <div>
+          <p style="font-size:12px;color:var(--text);margin-bottom:4px">Confirm before clear</p>
+          <p style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">Show a confirmation dialog before clearing all players</p>
+        </div>
+        <div class="theme-toggle" onclick="toggleSetting('confirmClear')" id="setting-confirmClear-toggle" style="margin-left:auto">
+          <div class="toggle-track"><div class="toggle-thumb"></div></div>
+          <span id="setting-confirmClear-lbl">On</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="config-panel">
+      <p class="section-lbl">About</p>
+      <p style="font-size:12px;color:var(--muted);font-family:'DM Mono',monospace;line-height:1.7">
+        With love from aziel, for the VDC community.
+      </p>
+    </div>
+
+  </div><!-- /p-settings -->
+
+</div><!-- /wrap -->
+
+<!-- ─── CUSTOM CONFIRM MODAL ─────────────────────────────────── -->
+<div id="confirm-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.6);backdrop-filter:blur(3px);align-items:center;justify-content:center">
+  <div style="background:var(--dark2);border:1px solid var(--border2);border-radius:6px;padding:24px 28px;max-width:340px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.5)">
+    <p id="confirm-modal-msg" style="font-size:13px;color:var(--text);margin-bottom:6px;font-weight:500"></p>
+    <p id="confirm-modal-sub" style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:20px;line-height:1.6"></p>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button onclick="resolveConfirm(false)" style="padding:7px 18px;border-radius:4px;border:1px solid var(--border);background:var(--dark3);color:var(--muted);font-size:12px;font-family:'DM Mono',monospace;cursor:pointer;transition:color .15s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">Cancel</button>
+      <button id="confirm-modal-ok" onclick="resolveConfirm(true)" style="padding:7px 18px;border-radius:4px;border:1px solid rgba(200,80,80,0.4);background:rgba(200,80,80,0.12);color:#C07070;font-size:12px;font-family:'DM Mono',monospace;cursor:pointer;font-weight:500;transition:background .15s" onmouseover="this.style.background='rgba(200,80,80,0.25)'" onmouseout="this.style.background='rgba(200,80,80,0.12)'">Clear All</button>
+    </div>
+  </div>
+</div>
+
 <!-- ─────────────────────────────────────────────────────────── -->
 <script>
 // ═══════════════════════════════════════════════════════════════
@@ -1350,7 +1484,12 @@ let CFG = {
   tierName:   '',
   cap:        820,
   rosterSize: 5,
-  bdeMmr:     145,   // legacy single-slot (kept for compat)
+  bdeMmr:     145,
+};
+
+const SETTINGS = {
+  autoApply:    false,
+  confirmClear: true,
 };
 
 // Multi-promo-player list
@@ -1417,7 +1556,7 @@ function renderPromoList() {
 
   container.innerHTML = PROMO_PLAYERS.map(p => `
     <div class="promo-entry">
-      <span class="pe-label">${p.label}</span>
+      <span class="pe-label">${esc(p.label)}</span>
       <span class="pe-mmr">${p.mmr} MMR</span>
       <span class="pe-role" style="color:${ROLE_COLORS[p.role]||'var(--muted)'};font-family:'DM Mono',monospace;font-size:11px">${p.role && p.role !== '—' ? (ROLE_LABELS[p.role]||p.role) : '—'}</span>
       <span class="pe-del" onclick="removePromoPlayer('${p.id}')" title="Remove">✕</span>
@@ -1437,7 +1576,7 @@ function refreshBuilderPLTBar() {
 
   bar.style.borderColor = 'var(--gold-mid)';
   display.innerHTML = PROMO_PLAYERS
-    .map(p => `<span><strong style="color:var(--gold)">${p.label}</strong> · ${p.mmr} MMR</span>`)
+    .map(p => `<span><strong style="color:var(--gold)">${esc(p.label)}</strong> · ${p.mmr} MMR</span>`)
     .join('<span style="color:var(--border2);margin:0 6px">|</span>');
   display.style.display = 'flex';
   display.style.flexWrap = 'wrap';
@@ -1452,6 +1591,118 @@ function allPlayersWithPLT() {
   return [...PLAYERS, ...promos];
 }
 
+
+// ═══════════════════════════════════════════════════════════════
+//  EXPORT / IMPORT
+// ═══════════════════════════════════════════════════════════════
+function exportConfig() {
+  const data = {
+    version: 1,
+    cfg: {
+      tierName:   document.getElementById('cfg-tier').value.trim(),
+      cap:        parseInt(document.getElementById('cfg-cap').value) || 0,
+      rosterSize: parseInt(document.getElementById('cfg-size').value) || 5,
+    },
+    players:       PLAYERS,
+    promoPlayers:  PROMO_PLAYERS,
+    duos:          DUOS,
+    badDuos:       BAD_DUOS,
+    lockedPlayers: [...LOCKED_PLAYERS],
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `${data.cfg.tierName || 'roster'}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importConfig() {
+  document.getElementById('import-file-input').click();
+}
+
+function handleImportFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.version || !data.players) throw new Error('Invalid file');
+
+      // Restore state — sanitize everything coming from the file
+      PLAYERS        = (data.players      || []).map(sanitizePlayer);
+      PROMO_PLAYERS  = (data.promoPlayers || []).map(sanitizePromo);
+      DUOS           = (data.duos     || []).filter(d => d.a && d.b).map(d => ({ a: esc(d.a).slice(0,64), b: esc(d.b).slice(0,64) }));
+      BAD_DUOS       = (data.badDuos  || []).filter(d => d.a && d.b).map(d => ({ a: esc(d.a).slice(0,64), b: esc(d.b).slice(0,64) }));
+      LOCKED_PLAYERS = new Set((data.lockedPlayers || []).map(n => esc(String(n)).slice(0,64)));
+      _promoIdSeq    = PROMO_PLAYERS.length + 1;
+
+      // Restore config fields
+      if (data.cfg) {
+        document.getElementById('cfg-tier').value = data.cfg.tierName || '';
+        document.getElementById('cfg-cap').value  = data.cfg.cap      || '';
+        document.getElementById('cfg-size').value = data.cfg.rosterSize || 5;
+      }
+
+      renderPlayerList();
+      renderPromoList();
+      input.value = '';
+
+      if (SETTINGS.autoApply) {
+        applyConfig();
+      } else {
+        const errEl = document.getElementById('parse-error');
+        errEl.textContent = `Loaded ${PLAYERS.length} player${PLAYERS.length !== 1 ? 's' : ''} from file.`;
+        errEl.style.color = 'var(--green)';
+        errEl.style.display = 'block';
+        setTimeout(() => { errEl.style.display = 'none'; errEl.style.color = ''; }, 3000);
+      }
+
+    } catch (err) {
+      const errEl = document.getElementById('parse-error');
+      errEl.textContent = 'Could not read file - make sure it\'s a valid roster builder export.';
+      errEl.style.display = 'block';
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SANITIZE  — prevent XSS from user-entered strings in innerHTML
+// ═══════════════════════════════════════════════════════════════
+function esc(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
+// Sanitize a player object coming in from import
+function sanitizePlayer(p) {
+  return {
+    name:      esc(p.name      || '').slice(0, 64),
+    mmr:       Math.max(1, Math.min(9999, parseInt(p.mmr) || 0)),
+    role:      esc(p.role      || '—').slice(0, 20),
+    acs:       p.acs  != null ? parseFloat(p.acs)  : null,
+    kd:        p.kd   != null ? parseFloat(p.kd)   : null,
+    flexRoles: Array.isArray(p.flexRoles) ? p.flexRoles.map(r => esc(r).slice(0,10)) : null,
+  };
+}
+
+function sanitizePromo(p) {
+  return {
+    id:        esc(p.id    || '').slice(0, 32),
+    label:     esc(p.label || '').slice(0, 64),
+    mmr:       Math.max(1, Math.min(9999, parseInt(p.mmr) || 145)),
+    role:      esc(p.role  || '—').slice(0, 20),
+    flexRoles: Array.isArray(p.flexRoles) ? p.flexRoles.map(r => esc(r).slice(0,10)) : null,
+  };
+}
 
 // ═══════════════════════════════════════════════════════════════
 //  BULK HELP TOGGLE
@@ -1597,7 +1848,7 @@ function parseStatsPaste(raw) {
     const computedKd = (kills && deaths && deaths > 0) ? parseFloat((kills/deaths).toFixed(2)) : null;
     return {
       id: 'pp_' + idx,
-      name:    b.name,
+      name:    esc(b.name).slice(0, 64),
       acs:     acs    ?? null,
       kd:      kd     ?? computedKd,
       kills:   kills  ?? null,
@@ -1629,7 +1880,7 @@ function renderPendingList() {
 
     return `<div class="pending-player" id="prow-${p.id}">
       <div class="pending-info">
-        <p class="pending-name">${p.name}</p>
+        <p class="pending-name">${esc(p.name)}</p>
         <p class="pending-stats">${statStr || 'No stats'}</p>
       </div>
       <div class="cfg-field" style="flex:0 0 auto;gap:4px;min-width:110px">
@@ -1738,7 +1989,7 @@ function getSetupValues() {
 }
 
 function addPlayer() {
-  const name = document.getElementById('add-name').value.trim();
+  const name = esc(document.getElementById('add-name').value.trim()).slice(0, 64);
   const mmr  = parseInt(document.getElementById('add-mmr').value);
   const role = document.getElementById('add-role').value.trim().toUpperCase() || '—';
   const acs  = parseFloat(document.getElementById('add-acs').value)  || null;
@@ -1806,8 +2057,11 @@ function removePlayer(name) {
   renderPlayerList();
 }
 
-function clearPlayers() {
-  if (!confirm('Clear all players?')) return;
+async function clearPlayers() {
+  if (SETTINGS.confirmClear) {
+    const ok = await showConfirm('Clear all players?', 'This removes everyone from the list. This cannot be undone.', 'Clear All');
+    if (!ok) return;
+  }
   PLAYERS  = [];
   selected = new Set();
   renderPlayerList();
@@ -1848,11 +2102,13 @@ function applyConfig() {
   buildGrid();
   renderAll();
   renderRanked();
-  // Show tabs
+  // Show tabs and settings gear
   ['tab-builder','tab-all','tab-ranked','tab-roles','tab-duos'].forEach(id => {
     const el = document.getElementById(id);
     if (el) { el.style.display = ''; el.classList.remove('locked'); }
   });
+  document.querySelector('.settings-gear-btn').style.display = 'flex';
+  document.getElementById('header-export-btn').style.display = 'block';
   sw('builder', document.getElementById('tab-builder'));
 }
 
@@ -2000,6 +2256,10 @@ function updateCap() {
   document.getElementById('cap-fill').style.background = col;
 
   const status = document.getElementById('cap-status');
+  const isValid = selected.size === CFG.rosterSize && total <= CFG.cap;
+  const discordBtn = document.getElementById('discord-copy-btn');
+  if (discordBtn) discordBtn.style.display = isValid ? 'block' : 'none';
+
   if (total > CFG.cap) {
     status.textContent = '✗ Over cap';   status.style.color = '#C07070';
   } else if (selected.size === CFG.rosterSize && total <= CFG.cap) {
@@ -2056,7 +2316,7 @@ function renderAll() {
 
   document.getElementById('all-body').innerHTML = list.map((c, i) => {
     const names = c.team.map(p =>
-      `<span class="tag" style="background:${p.isPLT ? 'rgba(201,168,76,0.15)' : 'var(--dark3)'};color:${p.isPLT ? 'var(--gold)' : 'var(--text)'}">${p.isPLT ? (p.label || 'Promo Player') : p.name}</span>`
+      `<span class="tag" style="background:${p.isPLT ? 'rgba(201,168,76,0.15)' : 'var(--dark3)'};color:${p.isPLT ? 'var(--gold)' : 'var(--text)'}">${p.isPLT ? esc(p.label || 'Promo Player') : esc(p.name)}</span>`
     ).join('');
     const remCol = c.rem <= 5 ? '#C07070' : c.rem <= 20 ? '#C9A84C' : '#7DB87D';
     const rowStyle = c.badDuoCount ? 'opacity:0.6' : '';
@@ -2097,7 +2357,7 @@ function renderRanked() {
   document.getElementById('ranked-body').innerHTML = sorted.map((c, i) => {
     const g     = grade(duoBoostedScore(c), minScore, maxScore);
     const names = c.team.map(p =>
-      `<span class="tag" style="background:${p.isPLT ? 'rgba(201,168,76,0.15)' : 'var(--dark3)'};color:${p.isPLT ? 'var(--gold)' : 'var(--text)'}">${p.isPLT ? (p.label || 'Promo Player') : p.name}</span>`
+      `<span class="tag" style="background:${p.isPLT ? 'rgba(201,168,76,0.15)' : 'var(--dark3)'};color:${p.isPLT ? 'var(--gold)' : 'var(--text)'}">${p.isPLT ? esc(p.label || 'Promo Player') : esc(p.name)}</span>`
     ).join('');
     return `<tr class="${i === 0 ? 'best' : ''}" style="${c.badDuoCount ? 'opacity:0.6' : ''}">
       <td style="color:var(--muted);font-family:'DM Mono',monospace;font-size:11px">${i === 0 ? '⭐' : i + 1}</td>
@@ -2347,9 +2607,9 @@ function renderDuoList() {
     : `<div style="display:flex;flex-direction:column;gap:6px">${DUOS.map((d,i)=>`
       <div class="pentry" style="border-color:rgba(100,180,120,0.25)">
         <span class="pe-name" style="color:#6ab478">\u2665</span>
-        <span class="pe-name">${d.a}</span>
+        <span class="pe-name">${esc(d.a)}</span>
         <span style="color:var(--muted);font-family:'DM Mono',monospace;font-size:11px">+</span>
-        <span class="pe-name">${d.b}</span>
+        <span class="pe-name">${esc(d.b)}</span>
         <span class="pe-del" onclick="removeDuo(${i})">\u2715</span>
       </div>`).join('')}</div>`;
 }
@@ -2368,9 +2628,9 @@ function renderBadDuoList() {
     : `<div style="display:flex;flex-direction:column;gap:6px">${BAD_DUOS.map((d,i)=>`
       <div class="pentry" style="border-color:rgba(200,80,80,0.25)">
         <span class="pe-name" style="color:#C07070">\u2715</span>
-        <span class="pe-name">${d.a}</span>
+        <span class="pe-name">${esc(d.a)}</span>
         <span style="color:var(--muted);font-family:'DM Mono',monospace;font-size:11px">+</span>
-        <span class="pe-name">${d.b}</span>
+        <span class="pe-name">${esc(d.b)}</span>
         <span class="pe-del" onclick="removeBadDuo(${i})">\u2715</span>
       </div>`).join('')}</div>`;
 }
@@ -2397,7 +2657,7 @@ function renderLockList() {
     : `<div style="display:flex;flex-direction:column;gap:6px">${arr.map(name=>`
       <div class="pentry" style="border-color:rgba(201,168,76,0.3)">
         <span style="color:var(--gold);font-size:13px">\uD83D\uDD12</span>
-        <span class="pe-name">${name}</span>
+        <span class="pe-name">${esc(name)}</span>
         <span style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;flex:1">must appear in every combo</span>
         <span class="pe-del" onclick="unlockPlayer('${name.replace(/'/g,"\\'")}')">\u2715</span>
       </div>`).join('')}</div>`;
@@ -2417,10 +2677,13 @@ function sw(id, btn) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
   btn.classList.add('on');
   document.getElementById('p-' + id).classList.add('on');
-  if (id === 'all')    renderAll();
-  if (id === 'ranked') renderRanked();
-  if (id === 'roles')  { updateRolePickerUI(); renderRoles(); }
-  if (id === 'duos')   renderDuos();
+  // Gear button active state
+  const gearBtn = document.querySelector('.settings-gear-btn');
+  if (gearBtn) gearBtn.classList.toggle('active', id === 'settings');
+  if (id === 'all')      renderAll();
+  if (id === 'ranked')   renderRanked();
+  if (id === 'roles')    { updateRolePickerUI(); renderRoles(); }
+  if (id === 'duos')     renderDuos();
 }
 
 
@@ -2431,6 +2694,89 @@ refreshBuilderPLTBar();
 buildGrid();
 renderAll();
 renderRanked();
+
+// Init settings toggles to match default state
+toggleSetting('confirmClear'); // starts true, toggle once to show ON state
+SETTINGS.confirmClear = true;  // toggle flipped it to false, restore
+
+// ═══════════════════════════════════════════════════════════════
+//  DISCORD COPY
+// ═══════════════════════════════════════════════════════════════
+function copyForDiscord() {
+  const pool = allPlayersWithPLT();
+  const team = [...selected].map(n => pool.find(p => p.name === n)).filter(Boolean);
+  if (!team.length) return;
+
+  const total = team.reduce((s, p) => s + p.mmr, 0);
+  const bar   = '━━━━━━━━━━━━━━━━━━━━';
+  const ROLE_SHORT = { DUELIST:'DUE', CTRL:'CTRL', SENTI:'SENTI', INI:'INI', FLEX:'FLEX', '—':'—' };
+
+  const lines = team.map(p => {
+    const name = p.isPLT ? (p.label || 'Promo Player') : p.name;
+    const role = ROLE_SHORT[p.role] || p.role || '—';
+    return `${name} · ${role} · ${p.mmr} MMR`;
+  });
+
+  const text = [
+    `📋 ${CFG.tierName ? CFG.tierName + ' Roster' : 'Roster'}`,
+    bar,
+    ...lines,
+    bar,
+    `Total: ${total} / ${CFG.cap} MMR · ${CFG.cap - total} remaining`,
+  ].join('\n');
+
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('discord-copy-btn');
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '📋 Copy for Discord';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CUSTOM CONFIRM MODAL
+// ═══════════════════════════════════════════════════════════════
+let _confirmResolve = null;
+
+function showConfirm(msg, sub, okLabel) {
+  return new Promise(resolve => {
+    _confirmResolve = resolve;
+    document.getElementById('confirm-modal-msg').textContent = msg;
+    document.getElementById('confirm-modal-sub').textContent = sub || '';
+    if (okLabel) document.getElementById('confirm-modal-ok').textContent = okLabel;
+    const modal = document.getElementById('confirm-modal');
+    modal.style.display = 'flex';
+  });
+}
+
+function resolveConfirm(result) {
+  document.getElementById('confirm-modal').style.display = 'none';
+  if (_confirmResolve) { _confirmResolve(result); _confirmResolve = null; }
+}
+
+// Close on backdrop click
+document.getElementById('confirm-modal').addEventListener('click', function(e) {
+  if (e.target === this) resolveConfirm(false);
+});
+
+// ═══════════════════════════════════════════════════════════════
+//  SETTINGS TOGGLES
+// ═══════════════════════════════════════════════════════════════
+function toggleSetting(key) {
+  SETTINGS[key] = !SETTINGS[key];
+  const toggle = document.getElementById(`setting-${key}-toggle`);
+  const lbl    = document.getElementById(`setting-${key}-lbl`);
+  if (!toggle || !lbl) return;
+  const on = SETTINGS[key];
+  toggle.querySelector('.toggle-thumb').style.transform = on ? 'translateX(13px)' : '';
+  toggle.querySelector('.toggle-track').style.background = on ? 'rgba(224,48,48,0.15)' : '';
+  toggle.querySelector('.toggle-track').style.borderColor = on ? 'rgba(224,48,48,0.3)' : '';
+  toggle.querySelector('.toggle-thumb').style.background = on ? 'var(--red)' : '';
+  lbl.textContent = on ? 'On' : 'Off';
+}
 
 // ═══════════════════════════════════════════════════════════════
 //  THEME TOGGLE

@@ -1,12 +1,12 @@
 # VDC Roster Builder
 
-A browser-based roster building tool for Valorant Draft Circuit. No installs.
+A browser-based roster building tool for Valorant Draft Circuit. No installs, no account, no backend.
 
 ---
 
 ## Getting Started
 
-[Open this link](https://drome05.github.io/roster-builder/), and start in the **Setup** tab. The other tabs are hidden until you hit **Apply & Build**.
+[Open this link](https://drome05.github.io/roster-builder/) and start in the **Setup** tab. The other tabs are hidden until you hit **Apply & Build**.
 
 ---
 
@@ -44,6 +44,10 @@ PlayerName#tag
 ```
 Multiple players at once is fine - paste the whole team block.
 
+### Saving and Loading
+
+Tired of re-entering your whole player pool every single session like some kind of masochist? Yeah, same. Hit **Export** in the header and it downloads a `.json` file named after your tier - `Apprentice.json`, `Mythic.json`, whatever you set. Next session, hit **Import**, pick the file, and everything loads back instantly. Players, roles, duos, locks, all of it. You can also share the file with other GMs so they're not starting from scratch either.
+
 Hit **Apply & Build** when your player list looks right. You can always come back to add or remove players.
 
 ---
@@ -52,6 +56,8 @@ Hit **Apply & Build** when your player list looks right. You can always come bac
 
 Click player cards to build a roster manually. The cap bar at the top tracks your MMR used in real time and tells you when you have a valid roster. Cards that would put you over cap or exceed roster size are greyed out automatically.
 
+Once you have a valid 5-player roster, a **📋 Copy for Discord** button appears in the header - one click and a clean formatted message is in your clipboard, ready to paste straight into GM chat.
+
 ---
 
 ## All Valid Combos Tab
@@ -59,8 +65,8 @@ Click player cards to build a roster manually. The cap bar at the top tracks you
 Every possible roster combination under your MMR cap, automatically. Sorted by how much cap room is left (tightest first). Columns are clickable to re-sort by MMR, room, ACS, or KD. Use the search bar to filter by player name.
 
 If you've set up duos in the Intangibles tab:
-- **♥ tag** = good duo present, combo is boosted slightly
-- **✕ tag** = bad duo present, combo is pushed to the bottom and dimmed
+- **♥ tag** - good duo present, combo is boosted slightly
+- **✕ tag** - bad duo present, combo is pushed to the bottom and dimmed
 
 ---
 
@@ -74,7 +80,7 @@ Good duo boost and bad duo penalty both affect the score and final ranking here 
 
 ## Role Breakdown Tab
 
-Use the **+/−** steppers to set a comp - e.g. 2 Duelist, 1 Controller, 1 Sentinel, 1 Initiator. Hit the stepper until the total matches your roster size, and the table instantly filters to only show combos that satisfy that comp.
+Use the **+/-** steppers to set a comp - e.g. 2 Duelist, 1 Controller, 1 Sentinel, 1 Initiator. The table instantly filters to only show combos that satisfy that comp.
 
 Flex players fill shortfalls based on whatever roles you checked in their pill selector during Setup. A flex player with only INI and SENTI checked won't count toward a Duelist slot.
 
@@ -97,12 +103,22 @@ Lock a player to only show combos that include them. Useful when you know someon
 
 ---
 
-## Other Notes
+## Settings
 
-- **Light/dark mode** - toggle in the top right corner
-- **Promo player roles** - if your promo slot is a flex, the pill selector works the same way as regular players
-- All data lives in the browser tab - nothing is saved between sessions, so keep your player list handy for re-importing
+Hit the gear icon in the top right corner anytime - it's always there regardless of what tab you're on.
+
+- **Theme** - switch between dark and light mode
+- **Auto-apply on import** - skip the review step and go straight to Builder after importing a JSON file
+- **Confirm before clear** - shows a clean in-app dialog before wiping your player list
 
 ---
 
-*Made by aziel*
+## Other Notes
+
+- **Promo player roles** - if your promo slot is a flex, the pill selector works the same way as regular players
+- All data lives in the browser tab - nothing is saved between sessions unless you export
+- Nothing leaves your browser, no tracking, no backend
+
+---
+
+*With love from aziel, for the VDC community.*
