@@ -6,7 +6,7 @@ A browser-based roster building tool for Valorant Draft Circuit. No installs, no
 
 ## Getting Started
 
-[Open this link](https://drome05.github.io/roster-builder/) and start in the **Setup** tab. The other tabs are hidden until you hit **Apply & Build**.
+[Open this link](https://drome05.github.io/roster-builder/) and start in the **Setup** tab. The Builder, All Combos, Best by Stats, Role Breakdown, and Intangibles tabs stay hidden until you hit **Apply & Build**. Scouting and Settings are available right away, no setup required.
 
 ---
 
@@ -20,33 +20,45 @@ Everything starts here. Fill this out once before you do anything else.
 - **Roster size** - defaults to 5, adjust if your tier is different
 
 ### Promo Lower Tier
-Add a "Promo Player" slot for a player being promoted from a lower tier. Give them a name, a role, and the MMR they count at in your tier. They'll show up as a selectable card in the Builder just like any real player.
+Add as many "Promo Player" slots as you need for players being promoted from a lower tier. Give each one a name, a role, and the MMR they count at in your tier. They'll show up as a selectable ghost card in the Builder just like any real player, badged so you can tell them apart.
 
 ### Adding Players
 
-**One at a time** - fill in Name, MMR, Role, ACS, and KD then hit Add.
+Paste a stats block straight from the VDC website - go to your franchise's Team page, select the whole "Team Stats" table, copy, and paste it into the box. Hit the **?** button next to Players if you need a reminder of the format. The tool reads name, ACS, kills, deaths, assists, and KD automatically.
 
-For Role, click the dropdown and pick one of: Duelist, Controller, Sentinel, Initiator, or Flex.
+For example, copying a table like this:
 
-If you pick **Flex**, a pill selector expands underneath - click the roles they can *actually* play. This matters for the Role Breakdown tab. If you leave all pills unselected, they count as full flex (can fill any role).
+| NAME | RATING | ACS | K | D | A | KD |
+|---|---|---|---|---|---|---|
+| arceus#0505 | 1.21 | 236.26 | 417 | 341 | 109 | 1.22 |
+| Thunder#229 | 1.27 | 225.05 | 354 | 282 | 96 | 1.26 |
 
-**Bulk import (recommended)** - paste a stats block directly from your tracker. Hit the **?** button next to Bulk Import to see the exact format, but it's just: copy the whole block, paste it in. The tool reads name, ACS, kills, deaths, assists, and KD automatically. After it parses, each player shows up as a row where you type their MMR and pick their role before hitting **Add All**.
-
-Format the tool expects (one value per line, no labels needed):
+...pastes in as one value per line, no labels needed:
 ```
-PlayerName#tag
-1.24
-256.57
-256
-207
-110
-1.24
+arceus#0505
+1.21
+236.26
+417
+341
+109
+1.22
+Thunder#229
+1.27
+225.05
+354
+282
+96
+1.26
 ```
-Multiple players at once is fine - paste the whole team block.
+Multiple players at once is fine - paste the whole team block and the tool will split it back out into individual players.
+
+After it parses, each player shows up as a row with their detected stats. Type their MMR and pick their Role for each one before hitting **Add All with MMR**. If you pick **Flex** for a player, a pill selector expands underneath their row - click the roles they can *actually* play. This matters for the Role Breakdown tab. If you leave all pills unselected, they count as full flex (can fill any role).
 
 ### Saving and Loading
 
-Tired of re-entering your whole player pool every single session like some kind of masochist? Yeah, same. Hit **Export** in the header and it downloads a `.json` file named after your tier - `Apprentice.json`, `Mythic.json`, whatever you set. Next session, hit **Import**, pick the file, and everything loads back instantly. Players, roles, duos, locks, all of it. You can also share the file with other GMs so they're not starting from scratch either.
+Your work now auto-saves to the browser as you go, so closing the tab and coming back later won't lose anything. That said, exporting is still the way to back things up properly or hand a roster off to another GM - hit **Export** in the Players section (it's also pinned to the header once you've built a roster, for quick access from any tab) and it downloads a `.json` file named after your tier - `Apprentice.json`, `Mythic.json`, whatever you set. Hit **Import** next to it to load a file back in - players, roles, duos, locks, promo players, all of it.
+
+If you want a clean slate instead of carrying over the auto-saved session, head to **Settings** and use **Clear saved data**.
 
 Hit **Apply & Build** when your player list looks right. You can always come back to add or remove players.
 
@@ -54,7 +66,7 @@ Hit **Apply & Build** when your player list looks right. You can always come bac
 
 ## Builder Tab
 
-Click player cards to build a roster manually. The cap bar at the top tracks your MMR used in real time and tells you when you have a valid roster. Cards that would put you over cap or exceed roster size are greyed out automatically.
+Click player cards to build a roster manually. Each card shows a Valorant agent portrait based on the player's role (promo players get a gold "PLT" badge instead). The cap bar at the top tracks your MMR used in real time and tells you when you have a valid roster. Cards that would put you over cap or exceed roster size are greyed out automatically.
 
 Once you have a valid 5-player roster, a **📋 Copy for Discord** button appears in the header - one click and a clean formatted message is in your clipboard, ready to paste straight into GM chat.
 
@@ -103,10 +115,32 @@ Lock a player to only show combos that include them. Useful when you know someon
 
 ---
 
+## Scouting Tab
+
+A board for tracking players you don't have yet - separate from your tier's player pool, and available before you've even run Setup.
+
+### Adding a scout
+Fill in Name, MMR, Role, Tier (Recruit / Prospect / Apprentice / Expert / Mythic), ACS, K/D, Notes, and Status, then hit **+ Scout Player**. Status defaults to **RFA** and cycles through four options - click the status badge in the table anytime to cycle it:
+- **Signed** - already on a team
+- **RFA** - sub only
+- **DE** - draft eligible
+- **DND** - pass
+
+### The board
+Filter by tier using the tabs above the table, or click any column header to sort. Each row has a **Sim** button and a remove (✕) button.
+
+**Sim** checks whether the scouted player could actually fit on your built roster: it temporarily slots them into your player pool, runs the combo math against your current cap, locks, and roster size, and shows you the best valid lineup that includes them (or tells you why none exists). You need a roster built in Setup first for this to work.
+
+### Sharing a scout board
+Hit **Share Board** to copy a link to your clipboard. Anyone who opens that link gets a banner offering to import your scouts into their own board - it merges in, skipping anyone they already have by name. Nothing touches a server; the whole list is just encoded into the link itself.
+
+---
+
 ## Settings
 
-Hit the gear icon in the top right corner anytime - it's always there regardless of what tab you're on.
+Settings now lives as its own tab in the sidebar, always available no matter what else you're doing.
 
+- **Session Data** - your progress auto-saves locally as you work. Hit **Clear saved data** to wipe it and start fresh.
 - **Theme** - switch between dark and light mode
 - **Auto-apply on import** - skip the review step and go straight to Builder after importing a JSON file
 - **Confirm before clear** - shows a clean in-app dialog before wiping your player list
@@ -115,8 +149,9 @@ Hit the gear icon in the top right corner anytime - it's always there regardless
 
 ## Other Notes
 
-- **Promo player roles** - if your promo slot is a flex, the pill selector works the same way as regular players
-- All data lives in the browser tab - nothing is saved between sessions unless you export
+- **Promo player roles** - if a promo slot is a flex, the pill selector works the same way as regular players
+- Your session auto-saves in the browser, but nothing is ever sent anywhere - export a `.json` if you want a real backup or want to hand a roster to another GM
+- Scout board sharing works the same way: the data lives in the link itself, not on a server
 - Nothing leaves your browser, no tracking, no backend
 
 ---
