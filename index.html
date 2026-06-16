@@ -4,44 +4,74 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Roster Builder</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
   <style>
-    /* ─── DESIGN TOKENS ─────────────────────────────────────── */
+    /* ─── DESIGN TOKENS ─────────────────────────────────── */
     :root {
-      --red:      #E03030;
-      --red-dim:  rgba(224, 48, 48, 0.12);
-      --red-mid:  rgba(224, 48, 48, 0.25);
-      --dark:     #0C0C0C;
-      --dark2:    #141414;
-      --dark3:    #1C1C1C;
-      --dark4:    #222222;
-      --border:   rgba(255, 255, 255, 0.07);
+      /* Accent — electric blue */
+      --red:      #5B8BF7;
+      --red-dim:  rgba(91, 139, 247, 0.10);
+      --red-mid:  rgba(91, 139, 247, 0.24);
+
+      /* Backgrounds — cold midnight */
+      --dark:     #08080E;
+      --dark2:    #0C0D1A;
+      --dark3:    #111326;
+      --dark4:    #171930;
+
+      /* Borders */
+      --border:   rgba(255, 255, 255, 0.06);
       --border2:  rgba(255, 255, 255, 0.12);
-      --text:     #F0EDE8;
-      --muted:    #888070;
-      --gold:     #C9A84C;
-      --gold-dim: rgba(201, 168, 76, 0.12);
-      --gold-mid: rgba(201, 168, 76, 0.3);
-      --green:    #4A8A4A;
-      --red-err:  #C07070;
+
+      /* Text */
+      --text:     #E8E9FF;
+      --muted:    #565878;
+
+      /* Semantic */
+      --gold:     #F59E0B;
+      --gold-dim: rgba(245, 158, 11, 0.10);
+      --gold-mid: rgba(245, 158, 11, 0.26);
+      --green:    #34D399;
+      --red-err:  #F87171;
+
+      /* Easing (Emil) */
+      --ease-out:    cubic-bezier(0.23, 1, 0.32, 1);
+      --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+    }
+
+    /* ─── SIDEBAR ALWAYS-DARK TEXT (sidebar bg is always dark) ── */
+    body.light .sidebar {
+      --text:     #E8E9FF;
+      --muted:    #565878;
+      --red:      #7BA7F9;
+      --red-dim:  rgba(123, 167, 249, 0.12);
+      --red-mid:  rgba(123, 167, 249, 0.26);
+      --border:   rgba(255, 255, 255, 0.06);
+      --border2:  rgba(255, 255, 255, 0.12);
+      --dark2:    #0C0D1A;
+      --dark3:    #111326;
+      --dark4:    #171930;
     }
 
     /* ─── LIGHT MODE ────────────────────────────────────────── */
     body.light {
-      --dark:     #F4F2EF;
-      --dark2:    #ECEAE6;
-      --dark3:    #E2DFD9;
-      --dark4:    #D8D4CE;
+      --red:      #3D6BE0;
+      --red-dim:  rgba(61, 107, 224, 0.09);
+      --red-mid:  rgba(61, 107, 224, 0.20);
+      --dark:     #F4F5FC;
+      --dark2:    #ECEDF8;
+      --dark3:    #E3E5F4;
+      --dark4:    #D8DAF0;
       --border:   rgba(0, 0, 0, 0.08);
       --border2:  rgba(0, 0, 0, 0.14);
-      --text:     #1A1714;
-      --muted:    #7A7060;
-      --gold:     #A07820;
-      --gold-dim: rgba(160, 120, 32, 0.1);
-      --gold-mid: rgba(160, 120, 32, 0.28);
-      --green:    #2E6E2E;
-      --red-err:  #A03030;
+      --text:     #111220;
+      --muted:    #6B6E90;
+      --gold:     #B45309;
+      --gold-dim: rgba(180, 83, 9, 0.09);
+      --gold-mid: rgba(180, 83, 9, 0.22);
+      --green:    #059669;
+      --red-err:  #DC2626;
     }
 
     /* ─── THEME TOGGLE ──────────────────────────────────────── */
@@ -61,7 +91,9 @@
       user-select: none;
     }
 
-    .theme-toggle:hover { border-color: var(--border2); color: var(--text); }
+    @media (hover: hover) and (pointer: fine) {
+      .theme-toggle:hover { border-color: var(--border2); color: var(--text); }
+    }
 
     .toggle-track {
       width: 28px;
@@ -85,21 +117,17 @@
       transition: transform .2s, background .2s;
     }
 
-    body.light .toggle-track { background: rgba(224, 48, 48, 0.15); border-color: rgba(224, 48, 48, 0.3); }
+    body.light .toggle-track { background: rgba(61, 107, 224, 0.15); border-color: rgba(61, 107, 224, 0.3); }
     body.light .toggle-thumb { transform: translateX(13px); background: var(--red); }
 
     /* ─── WATERMARK ─────────────────────────────────────────── */
     .watermark {
-      position: fixed;
-      bottom: 14px;
-      right: 18px;
       font-family: 'DM Mono', monospace;
-      font-size: 10px;
+      font-size: 9px;
       color: var(--muted);
-      opacity: 0.45;
+      opacity: 0.5;
       pointer-events: none;
       letter-spacing: .06em;
-      z-index: 999;
     }
 
     /* ─── RESET & BASE ──────────────────────────────────────── */
@@ -108,86 +136,247 @@
     body {
       background: var(--dark);
       color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-weight: 300;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 400;
       min-height: 100vh;
       line-height: 1.4;
     }
 
-    /* ─── LAYOUT ────────────────────────────────────────────── */
-    .wrap {
-      max-width: 980px;
-      margin: 0 auto;
-      padding: 40px 24px 60px;
+    /* ─── APP SHELL ─────────────────────────────────────────── */
+    .app-shell {
+      display: grid;
+      grid-template-columns: 230px 1fr;
+      min-height: 100vh;
     }
 
-    /* ─── HEADER ────────────────────────────────────────────── */
-    .header {
+    /* ─── SIDEBAR ───────────────────────────────────────────── */
+    .sidebar {
+      background: linear-gradient(180deg, #07081E 0%, #060714 60%, #060611 100%);
+      border-right: 1px solid rgba(91, 139, 247, 0.10);
+      position: relative;
       display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 24px;
-      padding-bottom: 18px;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+    .sidebar::-webkit-scrollbar { display: none; }
+
+    /* animated accent line at the top of sidebar */
+    .sidebar::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent 0%, rgba(91,139,247,0.9) 50%, transparent 100%);
+      background-size: 200% 100%;
+      animation: sidebarLine 4s ease-in-out infinite;
+      z-index: 1;
+    }
+
+    @keyframes sidebarLine {
+      0%   { background-position: -100% 0; opacity: .5; }
+      50%  { background-position: 0% 0;    opacity: 1;  }
+      100% { background-position: 100% 0;  opacity: .5; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .sidebar::before { animation: none; opacity: .6; }
+    }
+
+    .sidebar-logo {
+      padding: 26px 22px 20px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Ambient glow that pulses softly behind the logo */
+    .sidebar-logo::before {
+      content: '';
+      position: absolute;
+      top: -30px; left: -20px;
+      width: 140px; height: 80px;
+      background: radial-gradient(ellipse at center, rgba(91,139,247,0.22) 0%, transparent 70%);
+      animation: logoGlow 4s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+
+    @keyframes logoGlow {
+      from { opacity: 0.5; transform: scale(1); }
+      to   { opacity: 1;   transform: scale(1.15); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .sidebar-logo::before { animation: none; }
+    }
+
+    .sidebar-logo h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 21px;
+      letter-spacing: .28em;
+      color: var(--text);
+      margin-bottom: 5px;
+      line-height: 1;
+      position: relative;
+    }
+
+    .sidebar-logo .vdc-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 8px;
+      color: var(--red);
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      opacity: .75;
+      position: relative;
+    }
+
+    .sidebar-tier {
+      padding: 14px 22px;
       border-bottom: 1px solid var(--border);
     }
 
-    .header h1 {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 28px;
-      letter-spacing: .08em;
-    }
-
-    .header p {
-      font-size: 11px;
-      color: var(--muted);
+    .sidebar-tier #page-sub {
       font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      color: var(--muted);
+      margin-top: 8px;
+      line-height: 1.7;
     }
 
     .tier-badge {
       display: inline-block;
-      padding: 3px 10px;
+      padding: 3px 9px;
       border-radius: 3px;
       font-family: 'DM Mono', monospace;
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 500;
       background: var(--red-dim);
       color: var(--red);
-      border: 1px solid rgba(224, 48, 48, 0.25);
-      letter-spacing: .06em;
+      border: 1px solid var(--red-mid);
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      position: relative;
+      overflow: hidden;
     }
 
-    /* ─── TABS ──────────────────────────────────────────────── */
-    .tabs {
+    /* shimmer sweep */
+    .tier-badge::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 60%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+      animation: badgeShimmer 3.5s ease-in-out 1s infinite;
+    }
+
+    @keyframes badgeShimmer {
+      0%   { left: -100%; }
+      40%  { left: 160%; }
+      100% { left: 160%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .tier-badge::after { animation: none; }
+    }
+
+    /* ─── NAV ───────────────────────────────────────────────── */
+    .nav {
+      flex: 1;
+      padding: 8px 0;
+    }
+
+    .nav-item {
       display: flex;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 20px;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-
-    .tabs::-webkit-scrollbar { display: none; }
-
-    .tab {
-      font-size: 12px;
-      padding: 9px 18px;
-      cursor: pointer;
-      color: var(--muted);
-      border-bottom: 2px solid transparent;
-      margin-bottom: -1px;
-      white-space: nowrap;
-      flex-shrink: 0;
-      transition: color .15s;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 22px;
       font-family: 'DM Mono', monospace;
-      letter-spacing: .04em;
+      font-size: 11px;
+      letter-spacing: .06em;
+      color: var(--muted);
+      cursor: pointer;
+      border-left: 2px solid transparent;
+      position: relative;
+      transition: color 150ms var(--ease-out), background 150ms var(--ease-out), border-color 150ms var(--ease-out), transform 150ms var(--ease-out);
+      white-space: nowrap;
+      /* stagger-in on load */
+      animation: navItemIn 360ms var(--ease-out) both;
     }
 
-    .tab:hover { color: var(--text); }
-    .tab.on { color: var(--red); border-bottom-color: var(--red); font-weight: 500; }
+    .nav-item:nth-child(1) { animation-delay: 80ms; }
+    .nav-item:nth-child(2) { animation-delay: 130ms; }
+    .nav-item:nth-child(3) { animation-delay: 170ms; }
+    .nav-item:nth-child(4) { animation-delay: 210ms; }
+    .nav-item:nth-child(5) { animation-delay: 250ms; }
+    .nav-item:nth-child(6) { animation-delay: 290ms; }
+    .nav-item:nth-child(7) { animation-delay: 330ms; }
+    .nav-item:nth-child(8) { animation-delay: 365ms; }
 
+    @keyframes navItemIn {
+      from { opacity: 0; transform: translateX(-8px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .nav-item:hover { color: var(--text); background: rgba(255,255,255,0.035); transform: translateX(2px); }
+    }
+    .nav-item:active { transform: translateX(1px); opacity: .8; }
+    .nav-item.on {
+      color: var(--red);
+      border-left-color: var(--red);
+      background: rgba(91,139,247,0.07);
+      font-weight: 500;
+    }
+
+    /* ─── SIDEBAR BOTTOM ────────────────────────────────────── */
+    .sidebar-bottom {
+      padding: 16px 22px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    /* ─── MAIN CONTENT ──────────────────────────────────────── */
+    .main-content {
+      padding: 28px 32px 80px;
+      min-height: 100vh;
+      max-width: 940px;
+    }
+
+    .main-header {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+      min-height: 36px;
+    }
+
+    /* ─── PANEL TRANSITIONS ─────────────────────────────────── */
     .panel { display: none; }
-    .panel.on { display: block; }
+    .panel.on {
+      display: block;
+      animation: panelIn 280ms var(--ease-out) both;
+    }
+
+    @keyframes panelIn {
+      from { opacity: 0; transform: translateY(14px); filter: blur(2px); }
+      to   { opacity: 1; transform: translateY(0);   filter: blur(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .panel.on { animation: none; }
+      .player-card { transition: border-color .15s, box-shadow .15s !important; transform: none !important; }
+      .player-card:hover { transform: none !important; }
+      .player-card::after { display: none; }
+      .agent-img { transition: none !important; }
+    }
 
     /* ─── SECTION LABEL ─────────────────────────────────────── */
     .section-lbl {
@@ -206,7 +395,18 @@
       content: '';
       flex: 1;
       height: 1px;
-      background: var(--border);
+      background: linear-gradient(to right, var(--red-mid), transparent);
+      animation: lineGrow 500ms var(--ease-out) both;
+    }
+
+    @keyframes lineGrow {
+      from { transform: scaleX(0); transform-origin: left; opacity: 0; }
+      to   { transform: scaleX(1); transform-origin: left; opacity: 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .section-lbl::after { animation: none; }
+      .nav-item { animation: none; }
     }
 
     .section-lbl .lbl-aside {
@@ -221,9 +421,24 @@
     .config-panel {
       background: var(--dark2);
       border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 18px 20px;
+      border-radius: 10px;
+      padding: 20px 22px;
       margin-bottom: 14px;
+      animation: panelCardIn 340ms var(--ease-out) both;
+    }
+
+    .config-panel:nth-child(1) { animation-delay: 40ms; }
+    .config-panel:nth-child(2) { animation-delay: 100ms; }
+    .config-panel:nth-child(3) { animation-delay: 160ms; }
+    .config-panel:nth-child(4) { animation-delay: 220ms; }
+
+    @keyframes panelCardIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .config-panel { animation: none; }
     }
 
     .config-row {
@@ -265,13 +480,13 @@
       transition: border-color .15s;
     }
 
-    .cfg-input:focus { outline: none; border-color: rgba(224, 48, 48, 0.4); }
-    .cfg-input.error { border-color: rgba(220, 80, 80, 0.5); background: rgba(220, 80, 80, 0.05); }
+    .cfg-input:focus { outline: none; border-color: rgba(91, 139, 247, 0.45); box-shadow: 0 0 0 3px rgba(91,139,247,0.08); }
+    .cfg-input.error { border-color: rgba(248, 113, 113, 0.5); background: rgba(248, 113, 113, 0.05); }
 
     /* ─── BUTTONS ───────────────────────────────────────────── */
     .cfg-btn {
-      padding: 7px 16px;
-      border-radius: 4px;
+      padding: 8px 18px;
+      border-radius: 5px;
       cursor: pointer;
       font-size: 12px;
       font-family: 'DM Mono', monospace;
@@ -279,12 +494,17 @@
       border: 1px solid var(--red);
       background: var(--red-dim);
       color: var(--red);
-      transition: background .2s, border-color .2s;
+      transition: background 160ms var(--ease-out), border-color 160ms var(--ease-out), transform 160ms var(--ease-out);
       white-space: nowrap;
-      letter-spacing: .02em;
+      letter-spacing: .03em;
     }
 
-    .cfg-btn:hover { background: var(--red-mid); }
+    @media (hover: hover) and (pointer: fine) {
+      .cfg-btn:hover { background: var(--red-mid); }
+      .cfg-btn.secondary:hover { color: var(--text); border-color: var(--border2); }
+      .cfg-btn.gold-btn:hover { background: rgba(200, 155, 60, 0.22); }
+    }
+    .cfg-btn:active { transform: scale(0.96); box-shadow: 0 0 0 3px rgba(91,139,247,0.12); }
 
     .cfg-btn.secondary {
       border-color: var(--border);
@@ -292,15 +512,11 @@
       color: var(--muted);
     }
 
-    .cfg-btn.secondary:hover { color: var(--text); border-color: var(--border2); }
-
     .cfg-btn.gold-btn {
       border-color: var(--gold-mid);
       background: var(--gold-dim);
       color: var(--gold);
     }
-
-    .cfg-btn.gold-btn:hover { background: rgba(201, 168, 76, 0.2); }
 
     /* ─── PLAYER ENTRY LIST ─────────────────────────────────── */
     .player-entry-list {
@@ -360,7 +576,7 @@
       transition: border-color .15s;
     }
 
-    .bulk-area:focus { outline: none; border-color: rgba(224, 48, 48, 0.4); }
+    .bulk-area:focus { outline: none; border-color: rgba(91, 139, 247, 0.45); }
 
     /* ─── HIDE NUMBER SPINNERS ──────────────────────────────── */
     input[type=number]::-webkit-inner-spin-button,
@@ -371,60 +587,50 @@
     .discord-copy-btn {
       padding: 6px 14px;
       border-radius: 4px;
-      border: 1px solid rgba(88,101,242,0.4);
-      background: rgba(88,101,242,0.1);
-      color: #8891f2;
+      border: 1px solid rgba(91,139,247,0.28);
+      background: rgba(91,139,247,0.07);
+      color: var(--muted);
       font-size: 12px;
       font-family: 'DM Mono', monospace;
       font-weight: 500;
       cursor: pointer;
-      transition: all .2s;
+      transition: background 160ms var(--ease-out), border-color 160ms var(--ease-out), color 160ms var(--ease-out), transform 160ms var(--ease-out);
       white-space: nowrap;
     }
-    .discord-copy-btn:hover { background: rgba(88,101,242,0.2); border-color: rgba(88,101,242,0.6); }
-    .discord-copy-btn.copied { border-color: rgba(74,180,74,0.4); background: rgba(74,180,74,0.1); color: var(--green); }
+    @media (hover: hover) and (pointer: fine) {
+      .discord-copy-btn:hover { background: rgba(91,139,247,0.14); border-color: rgba(91,139,247,0.45); color: var(--text); }
+      .header-action-btn:hover { color: var(--text); border-color: var(--border2); }
+    }
+    .discord-copy-btn:active  { transform: scale(0.97); }
+    .discord-copy-btn.copied  { border-color: rgba(74,180,74,0.4); background: rgba(74,180,74,0.1); color: var(--green); }
 
     .header-action-btn {
-      padding: 6px 14px;
-      border-radius: 4px;
+      padding: 7px 14px;
+      border-radius: 5px;
       border: 1px solid var(--border);
       background: var(--dark3);
       color: var(--muted);
       font-size: 12px;
       font-family: 'DM Mono', monospace;
       cursor: pointer;
-      transition: all .2s;
+      transition: color 160ms var(--ease-out), border-color 160ms var(--ease-out), transform 160ms var(--ease-out);
       white-space: nowrap;
     }
-    .header-action-btn:hover { color: var(--text); border-color: var(--border2); }
+    .header-action-btn:active { transform: scale(0.97); }
 
-    /* ─── SETTINGS GEAR BUTTON ──────────────────────────────── */
-    .settings-gear-btn {
-      display: none;
-      width: 32px; height: 32px;
-      border-radius: 4px;
-      border: 1px solid var(--border);
-      background: var(--dark3);
-      color: var(--muted);
-      cursor: pointer;
-      align-items: center;
-      justify-content: center;
-      transition: all .2s, transform .3s;
-      flex-shrink: 0;
-    }
-    .settings-gear-btn:hover { color: var(--text); border-color: var(--border2); transform: rotate(45deg); }
-    .settings-gear-btn.active { color: var(--red); border-color: rgba(224,48,48,0.4); background: rgba(224,48,48,0.08); }
+    /* ─── SETTINGS GEAR BUTTON (legacy, hidden) ─────────────── */
+    .settings-gear-btn { display: none !important; }
     .help-trigger {
       display: inline-flex; align-items: center; justify-content: center;
       width: 16px; height: 16px; border-radius: 50%;
       background: var(--dark3); border: 1px solid var(--border2);
       font-size: 9px; font-family: 'DM Mono', monospace; font-weight: 700;
       color: var(--muted); cursor: pointer; margin-left: 8px;
-      vertical-align: middle; transition: all .15s; flex-shrink: 0;
+      vertical-align: middle; transition: background 150ms var(--ease-out), border-color 150ms var(--ease-out), color 150ms var(--ease-out); flex-shrink: 0;
       text-transform: none; letter-spacing: 0;
     }
     .help-trigger:hover, .help-trigger.active {
-      background: rgba(224,48,48,0.15); border-color: rgba(224,48,48,0.4);
+      background: rgba(91,139,247,0.12); border-color: rgba(91,139,247,0.4);
       color: var(--red);
     }
 
@@ -509,8 +715,8 @@
     }
 
     .cap-stat { text-align: center; }
-    .cap-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 2px; }
-    .cap-num   { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: .04em; line-height: 1; }
+    .cap-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: .10em; margin-bottom: 4px; }
+    .cap-num   { font-family: 'Space Grotesk', sans-serif; font-size: 28px; font-weight: 700; letter-spacing: -.02em; line-height: 1; }
 
     .cap-track {
       flex: 1;
@@ -524,7 +730,7 @@
     .cap-fill {
       height: 100%;
       border-radius: 3px;
-      transition: width .3s ease, background .3s ease;
+      transition: width 300ms var(--ease-out), background 300ms var(--ease-out);
     }
 
     #cap-status {
@@ -546,40 +752,196 @@
     /* ─── ROSTER GRID ───────────────────────────────────────── */
     .roster-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
-      gap: 8px;
+      grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+      gap: 10px;
       margin-bottom: 16px;
+      perspective: 1000px;
+    }
+
+    /* ─── CARD STAGGER ENTRY ────────────────────────────────── */
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
     .player-card {
-      background: var(--dark2);
+      background: var(--dark3);
       border: 1px solid var(--border);
-      border-radius: 5px;
-      padding: 12px 14px;
+      border-radius: 10px;
       cursor: pointer;
-      transition: border-color .15s, background .15s;
+      transition: border-color 220ms var(--ease-out), transform 220ms var(--ease-out), box-shadow 220ms var(--ease-out);
       user-select: none;
+      overflow: hidden;
+      animation: cardIn 280ms var(--ease-out) both;
+      /* perspective for 3D tilt */
+      transform-style: preserve-3d;
+      will-change: transform;
       position: relative;
     }
 
-    .player-card:hover:not(.locked):not(.disabled) { border-color: rgba(224, 48, 48, 0.35); }
-    .player-card.selected     { border-color: var(--red); background: var(--red-dim); }
-    .player-card.locked       { border-color: rgba(224, 48, 48, 0.35); background: var(--red-dim); cursor: default; }
-    .player-card.bde-active   { border-color: var(--gold-mid); background: var(--gold-dim); }
-    .player-card.plt-card     { border-color: rgba(201, 168, 76, 0.3); background: rgba(201, 168, 76, 0.03); border-style: dashed; }
-    .player-card.disabled     { opacity: .35; cursor: not-allowed; }
-
-    .pname  { font-size: 12px; font-weight: 500; margin-bottom: 3px; }
-    .pmmr   { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
-    .prole  { font-size: 9px; color: var(--muted); margin-top: 4px; font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: .06em; }
-
-    .badge-corner {
+    /* shine sweep pseudo-element */
+    .player-card::after {
+      content: '';
       position: absolute;
-      top: 6px;
-      right: 8px;
-      font-size: 9px;
+      inset: 0;
+      background: linear-gradient(
+        135deg,
+        transparent 30%,
+        rgba(255,255,255,0.06) 50%,
+        transparent 70%
+      );
+      opacity: 0;
+      transition: opacity 200ms var(--ease-out), transform 400ms var(--ease-out);
+      transform: translateX(-60%) skewX(-10deg);
+      pointer-events: none;
+      z-index: 3;
+      border-radius: 10px;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .player-card:hover:not(.locked):not(.disabled) {
+        border-color: rgba(91, 139, 247, 0.55);
+        transform: translateY(-5px) rotateX(4deg) rotateY(-2deg);
+        box-shadow:
+          0 20px 40px rgba(0,0,0,0.6),
+          0 0 0 1px rgba(91,139,247,0.22),
+          0 0 24px rgba(91,139,247,0.10);
+      }
+      /* shine slides in on hover */
+      .player-card:hover:not(.locked):not(.disabled)::after {
+        opacity: 1;
+        transform: translateX(60%) skewX(-10deg);
+      }
+      /* agent image zooms subtly */
+      .player-card:hover:not(.locked):not(.disabled) .agent-img {
+        transform: translateX(-50%) scale(1.07);
+      }
+    }
+    .player-card:active:not(.disabled) { transform: scale(0.96) !important; transition-duration: 100ms; }
+    .player-card.selected {
+      border-color: var(--red);
+      box-shadow: 0 0 0 1px var(--red), 0 8px 28px rgba(91,139,247,0.22);
+      animation: cardIn 280ms var(--ease-out) both, selectedPulse 2.4s ease-in-out 600ms infinite;
+    }
+
+    @keyframes selectedPulse {
+      0%, 100% { box-shadow: 0 0 0 1px var(--red), 0 8px 28px rgba(91,139,247,0.22); }
+      50%       { box-shadow: 0 0 0 1px var(--red), 0 8px 36px rgba(91,139,247,0.42); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .player-card.selected { animation: none; }
+    }
+    .player-card.locked     { border-color: rgba(91,139,247,0.4); cursor: default; }
+    .player-card.bde-active { border-color: var(--gold-mid); box-shadow: 0 0 0 1px rgba(200,155,60,0.4); }
+    .player-card.plt-card   { border-color: rgba(245,158,11,0.25); border-style: dashed; }
+    .player-card.disabled   { opacity: .3; cursor: not-allowed; }
+
+    .card-agent-header {
+      height: 110px;
+      position: relative;
+      overflow: hidden;
+      background: var(--dark4);
+    }
+
+    .agent-img {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      height: 200%;
+      width: auto;
+      object-fit: cover;
+      object-position: top center;
+      filter: drop-shadow(0 6px 16px rgba(0,0,0,0.6));
+      transition: transform 350ms var(--ease-out);
+    }
+
+    /* role-color accent bar at top */
+    .card-agent-header::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--card-role-color, var(--muted));
+      opacity: .7;
+      z-index: 2;
+      transition: opacity 220ms var(--ease-out), height 220ms var(--ease-out);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .player-card:hover:not(.locked):not(.disabled) .card-agent-header::before {
+        opacity: 1;
+        height: 3px;
+      }
+    }
+
+    /* gradient scrim so card body blends in */
+    .card-agent-header::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 40px;
+      background: linear-gradient(to bottom, transparent, var(--dark3));
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .agent-img-plt { opacity: 0.55; }
+
+    .plt-badge {
+      position: absolute;
+      top: 8px;
+      right: 10px;
       font-family: 'DM Mono', monospace;
+      font-size: 8px;
       font-weight: 500;
+      color: var(--gold);
+      background: rgba(200,155,60,0.15);
+      border: 1px solid rgba(200,155,60,0.3);
+      border-radius: 3px;
+      padding: 2px 6px;
+      letter-spacing: .1em;
+    }
+
+    .card-body {
+      padding: 10px 16px 13px;
+    }
+
+    .player-card.selected .card-body  { background: rgba(91,139,247,0.07); }
+    .player-card.bde-active .card-body { background: rgba(200,155,60,0.06); }
+
+    .pname {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 12.5px;
+      font-weight: 600;
+      margin-bottom: 7px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      letter-spacing: .01em;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+    }
+
+    .pmmr {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .prole {
+      font-size: 8px;
+      font-family: 'DM Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      opacity: .9;
     }
 
     /* ─── TABLES ────────────────────────────────────────────── */
@@ -667,7 +1029,7 @@
       transition: border-color .15s;
     }
 
-    .search-input:focus { outline: none; border-color: rgba(224, 48, 48, 0.3); }
+    .search-input:focus { outline: none; border-color: rgba(91, 139, 247, 0.35); }
 
     /* ─── MISC UTILITY ──────────────────────────────────────── */
     .empty-state {
@@ -720,17 +1082,41 @@
 
     /* ─── FLEX ROLE CHECKLIST ───────────────────────────────── */
     .flex-checklist {
-      display: none;
-      margin-top: 8px;
-      padding: 8px 10px;
-      background: rgba(160, 112, 192, 0.07);
-      border: 1px solid rgba(160, 112, 192, 0.25);
-      border-radius: 4px;
+      /* use grid for animatable show/hide */
+      display: grid;
+      grid-template-rows: 0fr;
+      overflow: hidden;
+      margin-top: 0;
+      opacity: 0;
+      transition:
+        grid-template-rows 220ms var(--ease-out),
+        margin-top 220ms var(--ease-out),
+        opacity 180ms var(--ease-out);
+    }
+    .flex-checklist > .flex-inner {
+      overflow: hidden;
+      min-height: 0;
+      padding: 0 10px;
+      border-left: 2px solid rgba(160,112,192,0.3);
+      display: flex;
       gap: 6px;
       flex-wrap: wrap;
       align-items: center;
+      transition: padding 220ms var(--ease-out);
     }
-    .flex-checklist.visible { display: flex; }
+    .flex-checklist.visible {
+      grid-template-rows: 1fr;
+      margin-top: 8px;
+      opacity: 1;
+    }
+    .flex-checklist.visible > .flex-inner {
+      padding-top: 8px;
+      padding-bottom: 8px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .flex-checklist { transition: none; }
+      .flex-checklist > .flex-inner { transition: none; }
+    }
     .flex-checklist-label {
       font-size: 9px; color: var(--muted); font-family: 'DM Mono', monospace;
       letter-spacing: .08em; text-transform: uppercase; width: 100%; margin-bottom: 2px;
@@ -740,9 +1126,13 @@
       padding: 4px 10px; border-radius: 20px;
       border: 1px solid var(--border); background: var(--dark3);
       font-size: 11px; font-family: 'DM Mono', monospace; color: var(--muted);
-      cursor: pointer; user-select: none; transition: all .15s;
+      cursor: pointer; user-select: none;
+      transition: border-color 150ms var(--ease-out), color 150ms var(--ease-out), background 150ms var(--ease-out), transform 150ms var(--ease-out);
     }
-    .flex-pill:hover { border-color: rgba(160,112,192,0.4); color: var(--text); }
+    @media (hover: hover) and (pointer: fine) {
+      .flex-pill:hover { border-color: rgba(160,112,192,0.4); color: var(--text); }
+    }
+    .flex-pill:active { transform: scale(0.95); }
     .flex-pill.on {
       background: rgba(160,112,192,0.15); border-color: rgba(160,112,192,0.5);
       color: #C090E8; font-weight: 500;
@@ -766,11 +1156,24 @@
       align-items: center;
       justify-content: space-between;
       gap: 6px;
-      transition: border-color .15s;
+      transition: border-color 160ms var(--ease-out), background 160ms var(--ease-out);
     }
 
+    @media (hover: hover) and (pointer: fine) {
+      .role-drop-btn:hover { border-color: var(--border2); background: var(--dark4); }
+    }
     .role-drop-btn:focus { outline: none; border-color: rgba(224,48,48,0.4); }
-    .role-drop-btn .caret { font-size: 9px; color: var(--muted); }
+
+    .role-drop-btn .caret {
+      font-size: 9px;
+      color: var(--muted);
+      transition: transform 200ms var(--ease-out);
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    .role-drop-wrap.open .role-drop-btn { border-color: rgba(91,139,247,0.45); }
+    .role-drop-wrap.open .caret { transform: rotate(180deg); }
 
     .role-drop-menu {
       position: absolute;
@@ -779,25 +1182,67 @@
       width: 100%;
       background: var(--dark2);
       border: 1px solid var(--border2);
-      border-radius: 4px;
+      border-radius: 6px;
       z-index: 200;
       overflow: hidden;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3);
+      /* Emil: visibility+opacity+transform instead of display:none */
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-6px) scale(0.98);
+      transform-origin: top center;
+      transition:
+        opacity 180ms var(--ease-out),
+        transform 180ms var(--ease-out),
+        visibility 0ms linear 180ms;
+    }
+
+    .role-drop-wrap.open .role-drop-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+      transition:
+        opacity 200ms var(--ease-out),
+        transform 200ms var(--ease-out),
+        visibility 0ms linear 0ms;
+    }
+
+    /* stagger items on open */
+    .role-drop-wrap.open .role-drop-item:nth-child(1) { animation: dropItemIn 180ms var(--ease-out) 30ms both; }
+    .role-drop-wrap.open .role-drop-item:nth-child(2) { animation: dropItemIn 180ms var(--ease-out) 55ms both; }
+    .role-drop-wrap.open .role-drop-item:nth-child(3) { animation: dropItemIn 180ms var(--ease-out) 80ms both; }
+    .role-drop-wrap.open .role-drop-item:nth-child(4) { animation: dropItemIn 180ms var(--ease-out) 105ms both; }
+    .role-drop-wrap.open .role-drop-item:nth-child(5) { animation: dropItemIn 180ms var(--ease-out) 130ms both; }
+    .role-drop-wrap.open .role-drop-item:nth-child(6) { animation: dropItemIn 180ms var(--ease-out) 155ms both; }
+
+    @keyframes dropItemIn {
+      from { opacity: 0; transform: translateX(-4px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .role-drop-menu { transition: opacity 100ms linear, visibility 0ms linear 100ms; transform: none !important; }
+      .role-drop-wrap.open .role-drop-menu { transition: opacity 100ms linear, visibility 0ms linear 0ms; }
+      .role-drop-wrap.open .role-drop-item { animation: none; }
+      .role-drop-btn .caret { transition: none; }
     }
 
     .role-drop-item {
-      padding: 8px 12px;
+      padding: 9px 12px;
       font-size: 12px;
       font-family: 'DM Mono', monospace;
       cursor: pointer;
       color: var(--muted);
-      transition: background .1s, color .1s;
+      transition: background 120ms var(--ease-out), color 120ms var(--ease-out);
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
-    .role-drop-item:hover { background: var(--dark3); color: var(--text); }
+    @media (hover: hover) and (pointer: fine) {
+      .role-drop-item:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+    }
+    .role-drop-item:active { background: rgba(91,139,247,0.10); }
     .role-drop-item.selected { color: var(--text); font-weight: 500; }
     .role-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 
@@ -806,8 +1251,13 @@
     .bulk-tab {
       padding: 6px 14px; font-size: 11px; font-family: 'DM Mono', monospace;
       cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent;
-      margin-bottom: -1px; transition: color .15s;
+      margin-bottom: -1px;
+      transition: color 150ms var(--ease-out), border-color 150ms var(--ease-out);
     }
+    @media (hover: hover) and (pointer: fine) {
+      .bulk-tab:hover { color: var(--text); }
+    }
+    .bulk-tab:active { opacity: .7; }
     .bulk-tab.on { color: var(--red); border-bottom-color: var(--red); }
     .bulk-pane { display: none; padding-top: 12px; }
     .bulk-pane.on { display: block; }
@@ -857,53 +1307,304 @@
       font-family: 'DM Mono', monospace;
       font-style: italic;
     }
+
+    /* ─── SCOUTING PAGE ─────────────────────────────────────── */
+    .scout-import-banner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 6px;
+      border: 1px solid rgba(91,139,247,0.35);
+      background: rgba(91,139,247,0.08);
+      margin-bottom: 18px;
+      animation: panelCardIn 320ms var(--ease-out) both;
+    }
+    .scout-import-banner p { font-size: 12px; color: var(--text); line-height: 1.5; flex: 1; }
+    .scout-import-banner strong { color: var(--red); }
+
+    .scout-add-row {
+      display: grid;
+      grid-template-columns: 1fr 90px 120px 100px 90px 90px;
+      gap: 8px;
+      align-items: end;
+      margin-bottom: 14px;
+    }
+    @media (max-width: 900px) {
+      .scout-add-row { grid-template-columns: 1fr 1fr; }
+    }
+
+    .scout-field label {
+      display: block;
+      font-size: 9px;
+      font-family: 'DM Mono', monospace;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+    .scout-field input, .scout-field select {
+      width: 100%;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--dark3);
+      color: var(--text);
+      font-size: 12px;
+      font-family: 'DM Mono', monospace;
+      box-sizing: border-box;
+      transition: border-color 160ms var(--ease-out);
+    }
+    .scout-field input:focus, .scout-field select:focus {
+      outline: none;
+      border-color: rgba(91,139,247,0.4);
+    }
+
+    .scout-table-wrap {
+      overflow-x: auto;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+    .scout-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      font-family: 'DM Mono', monospace;
+    }
+    .scout-table thead th {
+      text-align: left;
+      padding: 9px 12px;
+      font-size: 9px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: var(--dark2);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+      transition: color 150ms var(--ease-out);
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .scout-table thead th:hover { color: var(--text); }
+    }
+    .scout-table thead th.sort-active { color: var(--red); }
+    .scout-table thead th .sort-arrow { font-size: 8px; margin-left: 3px; opacity: .6; }
+
+    .scout-table tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 120ms var(--ease-out);
+      animation: scoutRowIn 260ms var(--ease-out) both;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .scout-table tbody tr:hover { background: rgba(255,255,255,0.025); }
+    }
+    .scout-table tbody tr:last-child { border-bottom: none; }
+    .scout-table td {
+      padding: 9px 12px;
+      color: var(--text);
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    .scout-table td.notes-cell {
+      max-width: 200px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--muted);
+    }
+
+    @keyframes scoutRowIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .scout-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 9px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: .04em;
+      white-space: nowrap;
+    }
+    .scout-status.sign   { background: rgba(52,211,153,0.12);  color: #34D399; border: 1px solid rgba(52,211,153,0.35); }
+    .scout-status.rfa    { background: rgba(245,158,11,0.12);  color: #F59E0B; border: 1px solid rgba(245,158,11,0.3);  }
+    .scout-status.de     { background: rgba(91,139,247,0.12);  color: #5B8BF7; border: 1px solid rgba(91,139,247,0.3);  }
+    .scout-status.dnd    { background: rgba(255,255,255,0.04); color: var(--muted); border: 1px solid var(--border); text-decoration: line-through; }
+
+    .scout-tier-tabs {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .scout-tier-tab {
+      padding: 5px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--dark3);
+      color: var(--muted);
+      font-size: 11px;
+      font-family: 'DM Mono', monospace;
+      cursor: pointer;
+      user-select: none;
+      transition: border-color 150ms var(--ease-out), color 150ms var(--ease-out), background 150ms var(--ease-out), transform 150ms var(--ease-out);
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .scout-tier-tab:hover { border-color: var(--border2); color: var(--text); }
+    }
+    .scout-tier-tab:active { transform: scale(0.95); }
+    .scout-tier-tab.on {
+      border-color: rgba(91,139,247,0.5);
+      background: rgba(91,139,247,0.12);
+      color: var(--red);
+    }
+    .scout-tier-tab[data-tier="Mythic"].on    { border-color: rgba(248,113,113,0.5); background: rgba(248,113,113,0.10); color: #F87171; }
+    .scout-tier-tab[data-tier="Expert"].on    { border-color: rgba(251,191,36,0.5);  background: rgba(251,191,36,0.10);  color: #FBBF24; }
+    .scout-tier-tab[data-tier="Apprentice"].on{ border-color: rgba(52,211,153,0.5);  background: rgba(52,211,153,0.10);  color: #34D399; }
+    .scout-tier-tab[data-tier="Prospect"].on  { border-color: rgba(91,139,247,0.5);  background: rgba(91,139,247,0.10);  color: #5B8BF7; }
+    .scout-tier-tab[data-tier="Recruit"].on   { border-color: rgba(167,139,250,0.5); background: rgba(167,139,250,0.10); color: #A78BFA; }
+
+    .scout-role-dot {
+      display: inline-block;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      margin-right: 5px;
+      flex-shrink: 0;
+    }
+
+    .scout-action-btn {
+      padding: 4px 10px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      font-size: 10px;
+      font-family: 'DM Mono', monospace;
+      cursor: pointer;
+      transition: color 150ms var(--ease-out), border-color 150ms var(--ease-out), background 150ms var(--ease-out), transform 150ms var(--ease-out);
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .scout-action-btn:hover { color: var(--text); border-color: var(--border2); background: rgba(255,255,255,0.04); }
+    }
+    .scout-action-btn:active { transform: scale(0.94); }
+    .scout-action-btn.danger:hover { color: #F87171; border-color: rgba(248,113,113,0.35); }
+    .scout-action-btn.sim { color: var(--green); border-color: rgba(52,211,153,0.3); }
+    @media (hover: hover) and (pointer: fine) {
+      .scout-action-btn.sim:hover { background: rgba(52,211,153,0.08); border-color: rgba(52,211,153,0.5); }
+    }
+
+    .scout-sim-result {
+      font-size: 10px;
+      color: var(--muted);
+      padding: 10px 12px;
+      background: var(--dark2);
+      border-top: 1px solid var(--border);
+      line-height: 1.6;
+    }
+    .scout-sim-result.good { color: var(--green); }
+    .scout-sim-result.bad  { color: #F87171; }
+
+    .scout-empty {
+      text-align: center;
+      padding: 48px 0;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      font-style: italic;
+    }
+
+    .share-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 16px;
+      border-radius: 4px;
+      border: 1px solid rgba(91,139,247,0.35);
+      background: rgba(91,139,247,0.10);
+      color: var(--red);
+      font-size: 12px;
+      font-family: 'DM Mono', monospace;
+      cursor: pointer;
+      transition: border-color 160ms var(--ease-out), background 160ms var(--ease-out), transform 150ms var(--ease-out);
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .share-btn:hover { border-color: rgba(91,139,247,0.6); background: rgba(91,139,247,0.18); }
+    }
+    .share-btn:active { transform: scale(0.96); }
+
+    .scout-copied-toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      background: var(--dark2);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 10px 20px;
+      font-size: 12px;
+      font-family: 'DM Mono', monospace;
+      color: var(--green);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 200ms var(--ease-out), transform 200ms var(--ease-out);
+      z-index: 9998;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    .scout-copied-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
   </style>
 </head>
 
 <body>
-<div class="wrap">
+<div class="app-shell">
 
-  <!-- ─── HEADER ─────────────────────────────────────────────── -->
-  <div class="header">
-    <div>
+  <!-- ─── SIDEBAR ──────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
       <h1 id="page-title">Roster Builder</h1>
-      <p id="page-sub">Configure your tier, cap, and players in the Setup tab</p>
+      <span class="vdc-label">Valorant Draft Circuit</span>
     </div>
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+    <div class="sidebar-tier">
       <span class="tier-badge" id="tier-badge">UNCONFIGURED</span>
+      <p id="page-sub">Configure your tier, cap, and players in Setup</p>
+    </div>
+    <nav class="nav">
+      <div class="nav-item on"  onclick="sw('setup',   this)">Setup</div>
+      <div class="nav-item" id="tab-builder" onclick="sw('builder', this)" style="display:none">Builder</div>
+      <div class="nav-item" id="tab-all"     onclick="sw('all',     this)" style="display:none">All Combos</div>
+      <div class="nav-item" id="tab-ranked"  onclick="sw('ranked',  this)" style="display:none">Best by Stats</div>
+      <div class="nav-item" id="tab-roles"   onclick="sw('roles',   this)" style="display:none">Role Breakdown</div>
+      <div class="nav-item" id="tab-duos"    onclick="sw('duos',    this)" style="display:none">Intangibles</div>
+      <div class="nav-item" id="tab-scouting" onclick="sw('scouting', this)">Scouting</div>
+      <div class="nav-item" id="tab-settings" onclick="sw('settings', this)">Settings</div>
+    </nav>
+    <div class="sidebar-bottom">
+      <span class="watermark">made by aziel</span>
+      <div class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <div class="toggle-track"><div class="toggle-thumb"></div></div>
+        <span id="theme-lbl">Light</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ─── MAIN CONTENT ─────────────────────────────────────────── -->
+  <main class="main-content">
+
+    <!-- top-right action buttons -->
+    <div class="main-header">
       <button class="discord-copy-btn" id="discord-copy-btn" onclick="copyForDiscord()" title="Copy roster for Discord" style="display:none">
         📋 Copy for Discord
       </button>
       <button class="header-action-btn" id="header-export-btn" onclick="exportConfig()" title="Export session" style="display:none">
         ↓ Export
       </button>
-      <button class="settings-gear-btn" id="settings-gear-btn" onclick="sw('settings', document.getElementById('tab-settings'))" title="Settings">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-        </svg>
-      </button>
     </div>
-  </div>
-
-  <!-- ─── WATERMARK ────────────────────────────────────────────── -->
-  <div class="watermark">made by aziel</div>
-
-  <!-- ─── TABS ───────────────────────────────────────────────── -->
-  <div class="tabs">
-    <div class="tab on"  onclick="sw('setup',   this)">⚙ Setup</div>
-    <div class="tab" id="tab-builder" onclick="sw('builder', this)" style="display:none">Builder</div>
-    <div class="tab" id="tab-all"     onclick="sw('all',     this)" style="display:none">All Valid Combos</div>
-    <div class="tab" id="tab-ranked"  onclick="sw('ranked',  this)" style="display:none">Best by Stats</div>
-    <div class="tab" id="tab-roles"   onclick="sw('roles',   this)" style="display:none">Role Breakdown</div>
-    <div class="tab" id="tab-duos"    onclick="sw('duos',    this)" style="display:none">Intangibles</div>
-    <div class="tab" id="tab-settings" onclick="sw('settings', this)" style="margin-left:auto;display:flex;align-items:center;padding:8px 12px">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="3"/>
-        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-      </svg>
-    </div>
-  </div>
 
   <!-- ══════════════════════════════════════════════════════════ -->
   <!--  SETUP PANEL                                              -->
@@ -944,26 +1645,28 @@
           <span class="cfg-label">Role</span>
           <div class="role-drop-wrap">
             <button type="button" class="role-drop-btn" onclick="toggleGenericDrop(event,'promo-role-menu')">
-              <span id="promo-role-label" style="color:var(--muted)">— None —</span>
+              <span id="promo-role-label" style="color:var(--muted)">None</span>
               <span class="caret">▾</span>
             </button>
-            <div class="role-drop-menu" id="promo-role-menu" style="display:none">
-              <div class="role-drop-item" onclick="pickGenericRole('promo-role-val','promo-role-label','','promo-role-menu');togglePromoFlex(false)">— None —</div>
-              <div class="role-drop-item" onclick="pickGenericRole('promo-role-val','promo-role-label','DUELIST','promo-role-menu');togglePromoFlex(false)"><span class="role-dot" style="background:#E05050"></span>Duelist</div>
-              <div class="role-drop-item" onclick="pickGenericRole('promo-role-val','promo-role-label','CTRL','promo-role-menu');togglePromoFlex(false)"><span class="role-dot" style="background:#5090D0"></span>Controller</div>
-              <div class="role-drop-item" onclick="pickGenericRole('promo-role-val','promo-role-label','SENTI','promo-role-menu');togglePromoFlex(false)"><span class="role-dot" style="background:#50A878"></span>Sentinel</div>
-              <div class="role-drop-item" onclick="pickGenericRole('promo-role-val','promo-role-label','INI','promo-role-menu');togglePromoFlex(false)"><span class="role-dot" style="background:#C9A84C"></span>Initiator</div>
-              <div class="role-drop-item" onclick="pickGenericRole('promo-role-val','promo-role-label','FLEX','promo-role-menu');togglePromoFlex(true)"><span class="role-dot" style="background:#A070C0"></span>Flex</div>
+            <div class="role-drop-menu" id="promo-role-menu" style="">
+              <div class="role-drop-item" onclick="pickGenericRole('promo-role-val','promo-role-label','','promo-role-menu');togglePromoFlex(false)">None</div>
+              <div class="role-drop-item" onclick="pickGenericRole('promo-role-val','promo-role-label','DUELIST','promo-role-menu');togglePromoFlex(false)"><span class="role-dot" style="background:#F87171"></span>Duelist</div>
+              <div class="role-drop-item" onclick="pickGenericRole('promo-role-val','promo-role-label','CTRL','promo-role-menu');togglePromoFlex(false)"><span class="role-dot" style="background:#60A5FA"></span>Controller</div>
+              <div class="role-drop-item" onclick="pickGenericRole('promo-role-val','promo-role-label','SENTI','promo-role-menu');togglePromoFlex(false)"><span class="role-dot" style="background:#34D399"></span>Sentinel</div>
+              <div class="role-drop-item" onclick="pickGenericRole('promo-role-val','promo-role-label','INI','promo-role-menu');togglePromoFlex(false)"><span class="role-dot" style="background:#FBBF24"></span>Initiator</div>
+              <div class="role-drop-item" onclick="pickGenericRole('promo-role-val','promo-role-label','FLEX','promo-role-menu');togglePromoFlex(true)"><span class="role-dot" style="background:#A78BFA"></span>Flex</div>
             </div>
           </div>
           <input type="hidden" id="promo-role-val" value="">
           <!-- Flex sub-role pills for promo -->
           <div class="flex-checklist" id="promo-flex-checklist">
-            <span class="flex-checklist-label">Can play:</span>
-            <div class="flex-pill" data-val="DUELIST" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#E05050"></span>Duelist</div>
-            <div class="flex-pill" data-val="CTRL" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#5090D0"></span>Controller</div>
-            <div class="flex-pill" data-val="SENTI" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#50A878"></span>Sentinel</div>
-            <div class="flex-pill" data-val="INI" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#C9A84C"></span>Initiator</div>
+            <div class="flex-inner">
+              <span class="flex-checklist-label">Can play:</span>
+              <div class="flex-pill" data-val="DUELIST" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#F87171"></span>Duelist</div>
+              <div class="flex-pill" data-val="CTRL" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#60A5FA"></span>Controller</div>
+              <div class="flex-pill" data-val="SENTI" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#34D399"></span>Sentinel</div>
+              <div class="flex-pill" data-val="INI" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#FBBF24"></span>Initiator</div>
+            </div>
           </div>
         </div>
         <div class="cfg-field" style="flex: 0 0 130px">
@@ -989,89 +1692,30 @@
       </div>
     </div>
 
-    <!-- Add Players -->
+    <!-- Players -->
     <div class="config-panel">
-      <p class="section-lbl">Add Players</p>
-
-      <div class="config-row" style="margin-bottom: 10px">
-        <div class="cfg-field" style="flex: 3">
-          <span class="cfg-label">Name / Gamertag</span>
-          <input class="cfg-input" id="add-name" type="text" placeholder="PlayerName#0000"
-                 onkeydown="if(event.key==='Enter') addPlayer()">
-        </div>
-        <div class="cfg-field" style="flex: 0 0 85px">
-          <span class="cfg-label">MMR</span>
-          <input class="cfg-input" id="add-mmr" type="number" placeholder="175" min="1"
-                 onkeydown="if(event.key==='Enter') addPlayer()">
-        </div>
-        <!-- Role dropdown -->
-        <div class="cfg-field" style="flex: 0 0 110px">
-          <span class="cfg-label">Role</span>
-          <div class="role-drop-wrap" id="role-drop-wrap">
-            <button type="button" class="role-drop-btn" id="role-drop-btn" onclick="toggleRoleDrop(event)">
-              <span id="role-drop-label">— None —</span>
-              <span class="caret">▾</span>
-            </button>
-            <div class="role-drop-menu" id="role-drop-menu" style="display:none">
-              <div class="role-drop-item" onclick="pickRole('')">— None —</div>
-              <div class="role-drop-item" onclick="pickRole('DUELIST')"><span class="role-dot" style="background:#E05050"></span>Duelist</div>
-              <div class="role-drop-item" onclick="pickRole('CTRL')"><span class="role-dot" style="background:#5090D0"></span>Controller</div>
-              <div class="role-drop-item" onclick="pickRole('SENTI')"><span class="role-dot" style="background:#50A878"></span>Sentinel</div>
-              <div class="role-drop-item" onclick="pickRole('INI')"><span class="role-dot" style="background:#C9A84C"></span>Initiator</div>
-              <div class="role-drop-item" onclick="pickRole('FLEX')"><span class="role-dot" style="background:#A070C0"></span>Flex</div>
-            </div>
-          </div>
-          <input type="hidden" id="add-role" value="">
-          <!-- Flex sub-role checklist -->
-          <div class="flex-checklist" id="flex-checklist">
-            <span class="flex-checklist-label">Can play:</span>
-            <div class="flex-pill" data-val="DUELIST" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#E05050"></span>Duelist</div>
-            <div class="flex-pill" data-val="CTRL" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#5090D0"></span>Controller</div>
-            <div class="flex-pill" data-val="SENTI" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#50A878"></span>Sentinel</div>
-            <div class="flex-pill" data-val="INI" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#C9A84C"></span>Initiator</div>
-          </div>
-        </div>
-        <div class="cfg-field" style="flex: 0 0 80px">
-          <span class="cfg-label">ACS</span>
-          <input class="cfg-input" id="add-acs" type="number" placeholder="220"
-                 onkeydown="if(event.key==='Enter') addPlayer()">
-        </div>
-        <div class="cfg-field" style="flex: 0 0 65px">
-          <span class="cfg-label">KD</span>
-          <input class="cfg-input" id="add-kd" type="number" step="0.01" placeholder="1.10"
-                 onkeydown="if(event.key==='Enter') addPlayer()">
-        </div>
-        <div class="cfg-field" style="flex: 0 0 auto; justify-content: flex-end">
-          <span class="cfg-label">&nbsp;</span>
-          <button class="cfg-btn" onclick="addPlayer()">+ Add</button>
-        </div>
-      </div>
-
-      <div id="parse-error" class="parse-error" style="display: none"></div>
-
-      <!-- Bulk Import -->
-      <p class="section-lbl" style="margin-top: 16px">Bulk Import
+      <p class="section-lbl">Players
         <span class="help-trigger" id="bulk-help-trigger" onclick="toggleBulkHelp()" title="How to use">?</span>
       </p>
-      <!-- Help popover -->
+
       <div class="help-popover" id="bulk-help-popover" style="display:none">
-        <p style="margin-bottom:8px;font-size:11px;color:var(--text)">Just copy the stats block straight from your tracker and paste it in. The format is one value per line:</p>
+        <p style="margin-bottom:8px;font-size:11px;color:var(--text)">Copy a stats block from your tracker and paste it in. One value per line:</p>
         <div class="help-format-block">
-          <div class="hfrow"><span class="hf-val">PlayerName#tag</span><span class="hf-lbl">— name</span></div>
-          <div class="hfrow"><span class="hf-val">1.24</span><span class="hf-lbl">— rating</span></div>
-          <div class="hfrow"><span class="hf-val">256.57</span><span class="hf-lbl">— ACS</span></div>
-          <div class="hfrow"><span class="hf-val">256</span><span class="hf-lbl">— kills</span></div>
-          <div class="hfrow"><span class="hf-val">207</span><span class="hf-lbl">— deaths</span></div>
-          <div class="hfrow"><span class="hf-val">110</span><span class="hf-lbl">— assists</span></div>
-          <div class="hfrow"><span class="hf-val">1.24</span><span class="hf-lbl">— KD</span></div>
+          <div class="hfrow"><span class="hf-val">PlayerName#tag</span><span class="hf-lbl">name</span></div>
+          <div class="hfrow"><span class="hf-val">1.24</span><span class="hf-lbl">rating</span></div>
+          <div class="hfrow"><span class="hf-val">256.57</span><span class="hf-lbl">ACS</span></div>
+          <div class="hfrow"><span class="hf-val">256</span><span class="hf-lbl">kills</span></div>
+          <div class="hfrow"><span class="hf-val">207</span><span class="hf-lbl">deaths</span></div>
+          <div class="hfrow"><span class="hf-val">110</span><span class="hf-lbl">assists</span></div>
+          <div class="hfrow"><span class="hf-val">1.24</span><span class="hf-lbl">KD</span></div>
         </div>
-        <p style="margin-top:8px;font-size:10px;color:var(--muted)">Multiple players at once is fine — just paste the whole block. You'll enter MMR for each player after.</p>
+        <p style="margin-top:8px;font-size:10px;color:var(--muted)">Paste multiple players at once — you'll set MMR and role for each after parsing.</p>
       </div>
-      <div class="bulk-hint" style="margin-bottom:8px">
-        Paste a stats block — name first, then one number per line (rating, ACS, kills, deaths, assists, KD). Multiple players at once is fine.
-      </div>
+
+      <div class="bulk-hint" style="margin-bottom:8px">Paste a stats block from your tracker. Multiple players at once is fine.</div>
       <textarea class="bulk-area" id="stats-paste-input" placeholder="PlayerName#tag&#10;1.24&#10;256.57&#10;256&#10;207&#10;110&#10;1.24" style="min-height:140px" oninput="parseStatsPaste(this.value)"></textarea>
 
+      <div id="parse-error" class="parse-error" style="display: none"></div>
       <div id="stats-parse-msg" class="bulk-hint" style="margin-top:6px;display:none"></div>
 
       <!-- Pending players list -->
@@ -1232,34 +1876,34 @@
       <p class="section-lbl">Set your comp <span class="lbl-aside">— how many of each role. Flex counts toward any role. Must add up to roster size.</span></p>
       <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end">
         <div class="cfg-field" style="flex:0 0 80px">
-          <span class="cfg-label" style="color:#E05050">Duelist</span>
+          <span class="cfg-label" style="color:#F87171">Duelist</span>
           <div style="display:flex;align-items:center;gap:4px">
             <button class="role-stepper" onclick="stepRole('duelist',-1)">−</button>
-            <span class="role-count" id="rc-duelist" style="color:#E05050">0</span>
+            <span class="role-count" id="rc-duelist" style="color:#F87171">0</span>
             <button class="role-stepper" onclick="stepRole('duelist',1)">+</button>
           </div>
         </div>
         <div class="cfg-field" style="flex:0 0 80px">
-          <span class="cfg-label" style="color:#5090D0">Controller</span>
+          <span class="cfg-label" style="color:#60A5FA">Controller</span>
           <div style="display:flex;align-items:center;gap:4px">
             <button class="role-stepper" onclick="stepRole('controller',-1)">−</button>
-            <span class="role-count" id="rc-controller" style="color:#5090D0">0</span>
+            <span class="role-count" id="rc-controller" style="color:#60A5FA">0</span>
             <button class="role-stepper" onclick="stepRole('controller',1)">+</button>
           </div>
         </div>
         <div class="cfg-field" style="flex:0 0 80px">
-          <span class="cfg-label" style="color:#50A878">Sentinel</span>
+          <span class="cfg-label" style="color:#34D399">Sentinel</span>
           <div style="display:flex;align-items:center;gap:4px">
             <button class="role-stepper" onclick="stepRole('sentinel',-1)">−</button>
-            <span class="role-count" id="rc-sentinel" style="color:#50A878">0</span>
+            <span class="role-count" id="rc-sentinel" style="color:#34D399">0</span>
             <button class="role-stepper" onclick="stepRole('sentinel',1)">+</button>
           </div>
         </div>
         <div class="cfg-field" style="flex:0 0 80px">
-          <span class="cfg-label" style="color:#C9A84C">Initiator</span>
+          <span class="cfg-label" style="color:#FBBF24">Initiator</span>
           <div style="display:flex;align-items:center;gap:4px">
             <button class="role-stepper" onclick="stepRole('initiator',-1)">−</button>
-            <span class="role-count" id="rc-initiator" style="color:#C9A84C">0</span>
+            <span class="role-count" id="rc-initiator" style="color:#FBBF24">0</span>
             <button class="role-stepper" onclick="stepRole('initiator',1)">+</button>
           </div>
         </div>
@@ -1284,11 +1928,11 @@
             <th>Roster</th>
             <th onclick="sortRoles('total')">MMR</th>
             <th onclick="sortRoles('rem')">Room</th>
-            <th style="color:#E05050">DUELIST</th>
-            <th style="color:#5090D0">CTRL</th>
-            <th style="color:#50A878">SENTI</th>
-            <th style="color:#C9A84C">INI</th>
-            <th style="color:#A070C0">FLEX</th>
+            <th style="color:#F87171">DUELIST</th>
+            <th style="color:#60A5FA">CTRL</th>
+            <th style="color:#34D399">SENTI</th>
+            <th style="color:#FBBF24">INI</th>
+            <th style="color:#A78BFA">FLEX</th>
           </tr>
         </thead>
         <tbody id="roles-body"></tbody>
@@ -1312,7 +1956,7 @@
             <button type="button" class="role-drop-btn" onclick="toggleGenericDrop(event,'duo-a-menu')" style="min-width:160px">
               <span id="duo-a-label" style="color:var(--muted)">Select player…</span><span class="caret">▾</span>
             </button>
-            <div class="role-drop-menu" id="duo-a-menu" style="display:none;max-height:200px;overflow-y:auto"></div>
+            <div class="role-drop-menu" id="duo-a-menu" style="max-height:200px;overflow-y:auto"></div>
           </div>
           <input type="hidden" id="duo-a-val" value="">
         </div>
@@ -1323,7 +1967,7 @@
             <button type="button" class="role-drop-btn" onclick="toggleGenericDrop(event,'duo-b-menu')" style="min-width:160px">
               <span id="duo-b-label" style="color:var(--muted)">Select player…</span><span class="caret">▾</span>
             </button>
-            <div class="role-drop-menu" id="duo-b-menu" style="display:none;max-height:200px;overflow-y:auto"></div>
+            <div class="role-drop-menu" id="duo-b-menu" style="max-height:200px;overflow-y:auto"></div>
           </div>
           <input type="hidden" id="duo-b-val" value="">
         </div>
@@ -1348,7 +1992,7 @@
             <button type="button" class="role-drop-btn" onclick="toggleGenericDrop(event,'badduo-a-menu')" style="min-width:160px">
               <span id="badduo-a-label" style="color:var(--muted)">Select player…</span><span class="caret">▾</span>
             </button>
-            <div class="role-drop-menu" id="badduo-a-menu" style="display:none;max-height:200px;overflow-y:auto"></div>
+            <div class="role-drop-menu" id="badduo-a-menu" style="max-height:200px;overflow-y:auto"></div>
           </div>
           <input type="hidden" id="badduo-a-val" value="">
         </div>
@@ -1359,7 +2003,7 @@
             <button type="button" class="role-drop-btn" onclick="toggleGenericDrop(event,'badduo-b-menu')" style="min-width:160px">
               <span id="badduo-b-label" style="color:var(--muted)">Select player…</span><span class="caret">▾</span>
             </button>
-            <div class="role-drop-menu" id="badduo-b-menu" style="display:none;max-height:200px;overflow-y:auto"></div>
+            <div class="role-drop-menu" id="badduo-b-menu" style="max-height:200px;overflow-y:auto"></div>
           </div>
           <input type="hidden" id="badduo-b-val" value="">
         </div>
@@ -1384,7 +2028,7 @@
             <button type="button" class="role-drop-btn" onclick="toggleGenericDrop(event,'lock-menu')" style="min-width:160px">
               <span id="lock-label" style="color:var(--muted)">Select player…</span><span class="caret">▾</span>
             </button>
-            <div class="role-drop-menu" id="lock-menu" style="display:none;max-height:200px;overflow-y:auto"></div>
+            <div class="role-drop-menu" id="lock-menu" style="max-height:200px;overflow-y:auto"></div>
           </div>
           <input type="hidden" id="lock-val" value="">
         </div>
@@ -1411,6 +2055,17 @@
   <div class="panel" id="p-settings">
 
     <div class="config-panel" style="margin-bottom:14px">
+      <p class="section-lbl">Session Data</p>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <div>
+          <p style="font-size:12px;color:var(--text);margin-bottom:4px">Auto-saved locally</p>
+          <p style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">Progress is saved automatically in your browser. No file needed.</p>
+        </div>
+        <button class="cfg-btn secondary" onclick="clearAutoSave()" style="margin-left:auto;white-space:nowrap;flex-shrink:0">Clear saved data</button>
+      </div>
+    </div>
+
+    <div class="config-panel" style="margin-bottom:14px">
       <p class="section-lbl">Appearance</p>
       <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
         <div>
@@ -1419,7 +2074,7 @@
         </div>
         <div class="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode" style="margin-left:auto">
           <div class="toggle-track"><div class="toggle-thumb"></div></div>
-          <span id="theme-lbl">Light</span>
+          <span id="theme-lbl2">Light</span>
         </div>
       </div>
     </div>
@@ -1461,7 +2116,151 @@
 
   </div><!-- /p-settings -->
 
-</div><!-- /wrap -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!--  SCOUTING PANEL                                          -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <div class="panel" id="p-scouting">
+
+    <!-- Import banner — shown when URL has #scout= -->
+    <div id="scout-import-banner" class="scout-import-banner" style="display:none">
+      <div style="font-size:22px;flex-shrink:0">📋</div>
+      <div>
+        <p><strong>Shared scout board received.</strong> Someone shared their scouting list with you.</p>
+        <p style="font-size:11px;color:var(--muted);margin-top:2px">Import will merge with your current scouts (no duplicates by name).</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-shrink:0">
+        <button class="cfg-btn" onclick="importSharedScouts()" style="background:rgba(91,139,247,0.12);border-color:rgba(91,139,247,0.4);color:var(--red)">Import</button>
+        <button class="cfg-btn secondary" onclick="dismissScoutBanner()">Dismiss</button>
+      </div>
+    </div>
+
+    <!-- Add a scout -->
+    <div class="config-panel" style="margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <p class="section-lbl" style="margin:0">Scout Player</p>
+        <button class="share-btn" onclick="shareScouts()" title="Copy shareable link to clipboard">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Share Board
+        </button>
+      </div>
+      <div class="scout-add-row">
+        <div class="scout-field">
+          <label>Name</label>
+          <input type="text" id="scout-name" placeholder="IGN" maxlength="64" onkeydown="if(event.key==='Enter')addScout()">
+        </div>
+        <div class="scout-field">
+          <label>MMR</label>
+          <input type="number" id="scout-mmr" placeholder="820" min="0" max="2000" onkeydown="if(event.key==='Enter')addScout()">
+        </div>
+        <div class="scout-field">
+          <label>Role</label>
+          <div class="role-drop-wrap">
+            <button type="button" class="role-drop-btn" onclick="toggleGenericDrop(event,'scout-role-menu')">
+              <span id="scout-role-label" style="color:var(--muted)">— any —</span><span class="caret">▾</span>
+            </button>
+            <div class="role-drop-menu" id="scout-role-menu">
+              <div class="role-drop-item" onclick="pickGenericRole('scout-role-val','scout-role-label','','scout-role-menu')">— any —</div>
+              <div class="role-drop-item" onclick="pickGenericRole('scout-role-val','scout-role-label','DUELIST','scout-role-menu')"><span class="role-dot" style="background:#F87171"></span>Duelist</div>
+              <div class="role-drop-item" onclick="pickGenericRole('scout-role-val','scout-role-label','CTRL','scout-role-menu')"><span class="role-dot" style="background:#60A5FA"></span>Controller</div>
+              <div class="role-drop-item" onclick="pickGenericRole('scout-role-val','scout-role-label','SENTI','scout-role-menu')"><span class="role-dot" style="background:#34D399"></span>Sentinel</div>
+              <div class="role-drop-item" onclick="pickGenericRole('scout-role-val','scout-role-label','INI','scout-role-menu')"><span class="role-dot" style="background:#FBBF24"></span>Initiator</div>
+              <div class="role-drop-item" onclick="pickGenericRole('scout-role-val','scout-role-label','FLEX','scout-role-menu')"><span class="role-dot" style="background:#A78BFA"></span>Flex</div>
+            </div>
+            <input type="hidden" id="scout-role-val" value="">
+          </div>
+        </div>
+        <div class="scout-field">
+          <label>Tier</label>
+          <div class="role-drop-wrap">
+            <button type="button" class="role-drop-btn" onclick="toggleGenericDrop(event,'scout-tier-menu')">
+              <span id="scout-tier-label" style="color:var(--muted)">— tier —</span><span class="caret">▾</span>
+            </button>
+            <div class="role-drop-menu" id="scout-tier-menu">
+              <div class="role-drop-item" onclick="pickScoutTier('')">— tier —</div>
+              <div class="role-drop-item" onclick="pickScoutTier('Recruit')"><span class="role-dot" style="background:#A78BFA"></span>Recruit</div>
+              <div class="role-drop-item" onclick="pickScoutTier('Prospect')"><span class="role-dot" style="background:#5B8BF7"></span>Prospect</div>
+              <div class="role-drop-item" onclick="pickScoutTier('Apprentice')"><span class="role-dot" style="background:#34D399"></span>Apprentice</div>
+              <div class="role-drop-item" onclick="pickScoutTier('Expert')"><span class="role-dot" style="background:#FBBF24"></span>Expert</div>
+              <div class="role-drop-item" onclick="pickScoutTier('Mythic')"><span class="role-dot" style="background:#F87171"></span>Mythic</div>
+            </div>
+            <input type="hidden" id="scout-tier-val" value="">
+          </div>
+        </div>
+        <div class="scout-field">
+          <label>ACS</label>
+          <input type="number" id="scout-acs" placeholder="250" min="0" max="999" onkeydown="if(event.key==='Enter')addScout()">
+        </div>
+        <div class="scout-field">
+          <label>K/D</label>
+          <input type="number" id="scout-kd" placeholder="1.20" step="0.01" min="0" max="10" onkeydown="if(event.key==='Enter')addScout()">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <div class="scout-field" style="flex:1;min-width:160px">
+          <label>Notes</label>
+          <input type="text" id="scout-notes" placeholder="Free text…" maxlength="200" onkeydown="if(event.key==='Enter')addScout()">
+        </div>
+        <div class="scout-field" style="flex:0 0 auto;min-width:170px">
+          <label>Status</label>
+          <div class="role-drop-wrap">
+            <button type="button" class="role-drop-btn" onclick="toggleGenericDrop(event,'scout-status-menu')">
+              <span id="scout-status-label" style="color:#F59E0B">RFA</span><span class="caret">▾</span>
+            </button>
+            <div class="role-drop-menu" id="scout-status-menu">
+              <div class="role-drop-item" onclick="pickScoutStatus('signed')"><span class="role-dot" style="background:#34D399"></span>Signed <span style="color:var(--muted);font-size:10px;margin-left:4px">Already on team</span></div>
+              <div class="role-drop-item" onclick="pickScoutStatus('rfa')"><span class="role-dot" style="background:#F59E0B"></span>RFA <span style="color:var(--muted);font-size:10px;margin-left:4px">Sub only</span></div>
+              <div class="role-drop-item" onclick="pickScoutStatus('de')"><span class="role-dot" style="background:#5B8BF7"></span>DE <span style="color:var(--muted);font-size:10px;margin-left:4px">Draft eligible</span></div>
+              <div class="role-drop-item" onclick="pickScoutStatus('dnd')"><span class="role-dot" style="background:#565878"></span>DND <span style="color:var(--muted);font-size:10px;margin-left:4px">Pass</span></div>
+            </div>
+            <input type="hidden" id="scout-status-val" value="rfa">
+          </div>
+        </div>
+        <div class="scout-field" style="flex:0 0 auto;margin-top:auto">
+          <label>&nbsp;</label>
+          <button class="cfg-btn" onclick="addScout()" style="background:rgba(91,139,247,0.10);border-color:rgba(91,139,247,0.35);color:var(--red)">+ Scout Player</button>
+        </div>
+        <div id="scout-add-error" class="parse-error" style="display:none;flex:1 1 100%;margin-top:0"></div>
+      </div>
+    </div>
+
+    <!-- Tier filter tabs -->
+    <div class="scout-tier-tabs">
+      <div class="scout-tier-tab on" data-tier="" onclick="setScoutTierFilter('')">All Tiers</div>
+      <div class="scout-tier-tab" data-tier="Recruit" onclick="setScoutTierFilter('Recruit')">Recruit</div>
+      <div class="scout-tier-tab" data-tier="Prospect" onclick="setScoutTierFilter('Prospect')">Prospect</div>
+      <div class="scout-tier-tab" data-tier="Apprentice" onclick="setScoutTierFilter('Apprentice')">Apprentice</div>
+      <div class="scout-tier-tab" data-tier="Expert" onclick="setScoutTierFilter('Expert')">Expert</div>
+      <div class="scout-tier-tab" data-tier="Mythic" onclick="setScoutTierFilter('Mythic')">Mythic</div>
+    </div>
+
+    <!-- Scout table -->
+    <div class="scout-table-wrap">
+      <table class="scout-table">
+        <thead>
+          <tr>
+            <th onclick="scoutSort('name')">Name <span class="sort-arrow" id="sarrow-name"></span></th>
+            <th onclick="scoutSort('mmr')">MMR <span class="sort-arrow" id="sarrow-mmr"></span></th>
+            <th onclick="scoutSort('role')">Role <span class="sort-arrow" id="sarrow-role"></span></th>
+            <th onclick="scoutSort('tier')">Tier <span class="sort-arrow" id="sarrow-tier"></span></th>
+            <th onclick="scoutSort('acs')">ACS <span class="sort-arrow" id="sarrow-acs"></span></th>
+            <th onclick="scoutSort('kd')">K/D <span class="sort-arrow" id="sarrow-kd"></span></th>
+            <th onclick="scoutSort('status')">Status <span class="sort-arrow" id="sarrow-status"></span></th>
+            <th class="notes-cell" onclick="scoutSort('notes')">Notes <span class="sort-arrow" id="sarrow-notes"></span></th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="scout-tbody"></tbody>
+      </table>
+      <div id="scout-empty" class="scout-empty">No players scouted yet. Add someone above to get started.</div>
+    </div>
+
+  </div><!-- /p-scouting -->
+
+  <!-- Toast -->
+  <div id="scout-toast" class="scout-copied-toast">✓ Link copied to clipboard</div>
+
+  </main><!-- /main-content -->
+</div><!-- /app-shell -->
 
 <!-- ─── CUSTOM CONFIRM MODAL ─────────────────────────────────── -->
 <div id="confirm-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.6);backdrop-filter:blur(3px);align-items:center;justify-content:center">
@@ -1505,6 +2304,12 @@ let selected = new Set();
 let allSort = 'rank', allDir = 1, allFilter = '';
 let rankSort = 'score', rankDir = 1;
 
+let SCOUTS = [];       // [{id, name, mmr, role, tier, status, notes, acs, kd}]
+let _scoutIdSeq = 1;
+let scoutSortKey = 'name', scoutSortDir = 1;
+let scoutTierFilter = '';
+let _pendingScoutImport = null; // decoded data from URL hash
+
 
 // ═══════════════════════════════════════════════════════════════
 //  PROMO (PLT) HELPERS
@@ -1546,6 +2351,7 @@ function removePromoPlayer(id) {
 }
 
 function renderPromoList() {
+  autoSave();
   const container = document.getElementById('promo-entry-list');
   const emptyMsg  = document.getElementById('promo-empty-msg');
 
@@ -1595,8 +2401,11 @@ function allPlayersWithPLT() {
 // ═══════════════════════════════════════════════════════════════
 //  EXPORT / IMPORT
 // ═══════════════════════════════════════════════════════════════
-function exportConfig() {
-  const data = {
+// ─── AUTO-SAVE / AUTO-LOAD ──────────────────────────────────────
+const LS_KEY = 'vdc-roster-autosave';
+
+function buildSaveData() {
+  return {
     version: 1,
     cfg: {
       tierName:   document.getElementById('cfg-tier').value.trim(),
@@ -1608,7 +2417,62 @@ function exportConfig() {
     duos:          DUOS,
     badDuos:       BAD_DUOS,
     lockedPlayers: [...LOCKED_PLAYERS],
+    scouts:        SCOUTS,
   };
+}
+
+function autoSave() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(buildSaveData())); } catch(e) {}
+}
+
+function autoLoad() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (!data.version) return;
+
+    PLAYERS        = (data.players      || []).map(sanitizePlayer);
+    PROMO_PLAYERS  = (data.promoPlayers || []).map(sanitizePromo);
+    DUOS           = (data.duos     || []).filter(d => d.a && d.b).map(d => ({ a: esc(d.a).slice(0,64), b: esc(d.b).slice(0,64) }));
+    BAD_DUOS       = (data.badDuos  || []).filter(d => d.a && d.b).map(d => ({ a: esc(d.a).slice(0,64), b: esc(d.b).slice(0,64) }));
+    LOCKED_PLAYERS = new Set((data.lockedPlayers || []).map(n => esc(String(n)).slice(0,64)));
+    _promoIdSeq    = PROMO_PLAYERS.length + 1;
+
+    if (data.cfg) {
+      document.getElementById('cfg-tier').value = data.cfg.tierName || '';
+      document.getElementById('cfg-cap').value  = data.cfg.cap      || '';
+      document.getElementById('cfg-size').value = data.cfg.rosterSize || 5;
+    }
+
+    SCOUTS = (data.scouts || []).map(s => ({
+      id:     s.id     || (_scoutIdSeq++),
+      name:   esc(String(s.name  || '')).slice(0,64),
+      mmr:    parseInt(s.mmr)  || 0,
+      role:   ['DUELIST','CTRL','SENTI','INI','FLEX',''].includes(s.role) ? s.role : '',
+      tier:   VDC_TIERS.includes(s.tier) ? s.tier : '',
+      status: ['signed','rfa','de','dnd'].includes(s.status) ? s.status : (s.status === 'sign' ? 'signed' : 'rfa'),
+      notes:  esc(String(s.notes || '')).slice(0,200),
+      acs:    parseFloat(s.acs) || 0,
+      kd:     parseFloat(s.kd)  || 0,
+    }));
+
+    renderPlayerList();
+    renderPromoList();
+    renderScoutList();
+
+    if (PLAYERS.length && data.cfg?.cap) applyConfig();
+  } catch(e) {}
+}
+
+function clearAutoSave() {
+  if (!confirm('Clear all saved data? This cannot be undone.')) return;
+  localStorage.removeItem(LS_KEY);
+  location.reload();
+}
+
+function exportConfig() {
+  const data = buildSaveData();
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
@@ -1718,24 +2582,100 @@ function toggleBulkHelp() {
 // ═══════════════════════════════════════════════════════════════
 //  ROLE DROPDOWN  (generic)
 // ═══════════════════════════════════════════════════════════════
-const ROLE_COLORS = { DUELIST:'#E05050', CTRL:'#5090D0', SENTI:'#50A878', INI:'#C9A84C', FLEX:'#A070C0' };
-const ROLE_LABELS = { DUELIST:'Duelist', CTRL:'Controller', SENTI:'Sentinel', INI:'Initiator', FLEX:'Flex' };
+const ROLE_COLORS = { DUELIST:'#F87171', CTRL:'#60A5FA', SENTI:'#34D399', INI:'#FBBF24', FLEX:'#A78BFA' };
+const ROLE_LABELS = { DUELIST:'Duelist', CTRL:'Controller', SENTI:'Sentinel', INI:'Initiator', FLEX:'Flex', '':'—' };
+
+// ─── DROPDOWN PORTAL ─────────────────────────────────────────────
+// Menus are teleported to <body> at position:fixed so CSS animation
+// stacking contexts inside .config-panel can never clip them.
+let _openDropWrap = null;
+
+function _getPortal() {
+  let p = document.getElementById('__drop-portal__');
+  if (!p) {
+    p = document.createElement('div');
+    p.id = '__drop-portal__';
+    p.style.cssText = 'position:fixed;top:0;left:0;z-index:9000;pointer-events:none';
+    document.body.appendChild(p);
+  }
+  return p;
+}
+
+function _closePortal() {
+  if (!_openDropWrap) return;
+  _openDropWrap.classList.remove('open');
+  const portal = document.getElementById('__drop-portal__');
+  if (portal) portal.innerHTML = '';
+  _openDropWrap = null;
+}
+
+document.addEventListener('click', _closePortal);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') _closePortal(); });
 
 function toggleGenericDrop(e, menuId) {
   e.stopPropagation();
-  document.querySelectorAll('.role-drop-menu').forEach(m => {
-    if (m.id !== menuId) m.style.display = 'none';
-  });
   const menu = document.getElementById(menuId);
-  menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+  const wrap = menu.closest('.role-drop-wrap');
+
+  // Clicking the already-open wrap closes it
+  if (_openDropWrap === wrap) { _closePortal(); return; }
+
+  // Close any other open drop
+  _closePortal();
+
+  // Position portal menu using fixed coords of the button
+  const btn = wrap.querySelector('.role-drop-btn');
+  const r   = btn.getBoundingClientRect();
+  const itemCount = menu.querySelectorAll('.role-drop-item').length;
+  const estH = itemCount * 40 + 12;
+  const spaceBelow = window.innerHeight - r.bottom;
+  const flipUp = spaceBelow < estH + 8 && r.top > estH;
+
+  // Clone the menu into the portal
+  const portal = _getPortal();
+  const clone  = menu.cloneNode(true);
+  clone.id = menuId + '__portal';
+  clone.style.cssText = `
+    position: fixed;
+    width: ${r.width}px;
+    left: ${r.left}px;
+    ${flipUp
+      ? `bottom: ${window.innerHeight - r.top + 4}px; top: auto; transform-origin: bottom center;`
+      : `top: ${r.bottom + 4}px; bottom: auto; transform-origin: top center;`
+    }
+    pointer-events: auto;
+    background: var(--dark2);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    z-index: 9000;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.35);
+    opacity: 1; visibility: visible; transform: translateY(0) scale(1);
+  `;
+
+  // Re-wire click handlers on cloned items — read from original items
+  clone.querySelectorAll('.role-drop-item').forEach((cloneItem, i) => {
+    const origItem = menu.querySelectorAll('.role-drop-item')[i];
+    cloneItem.addEventListener('click', e2 => {
+      e2.stopPropagation();
+      origItem.click(); // fire original handler
+      _closePortal();
+    });
+  });
+
+  portal.appendChild(clone);
+  wrap.classList.add('open');
+  _openDropWrap = wrap;
 }
 
 function pickGenericRole(valId, lblId, val, menuId) {
   document.getElementById(valId).value = val;
   const lbl = document.getElementById(lblId);
-  lbl.textContent = val ? (ROLE_LABELS[val] || val) : '— None —';
+  lbl.textContent = val ? (ROLE_LABELS[val] || val) : 'None';
   lbl.style.color = val ? (ROLE_COLORS[val] || 'var(--text)') : 'var(--muted)';
-  document.getElementById(menuId).style.display = 'none';
+  const wrap = document.getElementById(menuId).closest('.role-drop-wrap');
+  wrap.classList.remove('open');
+  setListOverflow(wrap, false);
 }
 
 // Wrappers for the main add-player dropdown
@@ -1773,7 +2713,10 @@ function resetFlexPills(containerId) {
 
 // Close all on outside click
 document.addEventListener('click', () => {
-  document.querySelectorAll('.role-drop-menu').forEach(m => m.style.display = 'none');
+  document.querySelectorAll('.role-drop-wrap.open').forEach(w => {
+    w.classList.remove('open');
+    setListOverflow(w, false);
+  });
 });
 
 // ═══════════════════════════════════════════════════════════════
@@ -1887,25 +2830,27 @@ function renderPendingList() {
         <span class="cfg-label">Role</span>
         <div class="role-drop-wrap">
           <button type="button" class="role-drop-btn" onclick="toggleGenericDrop(event,'${roleMenuId}')">
-            <span id="${roleLblId}" style="color:var(--muted)">— None —</span>
+            <span id="${roleLblId}" style="color:var(--muted)">None</span>
             <span class="caret">▾</span>
           </button>
-          <div class="role-drop-menu" id="${roleMenuId}" style="display:none">
-            <div class="role-drop-item" onclick="pickGenericRole('${roleValId}','${roleLblId}','','${roleMenuId}');togglePendingFlex('${p.id}',false)">— None —</div>
-            <div class="role-drop-item" onclick="pickGenericRole('${roleValId}','${roleLblId}','DUELIST','${roleMenuId}');togglePendingFlex('${p.id}',false)"><span class="role-dot" style="background:#E05050"></span>Duelist</div>
-            <div class="role-drop-item" onclick="pickGenericRole('${roleValId}','${roleLblId}','CTRL','${roleMenuId}');togglePendingFlex('${p.id}',false)"><span class="role-dot" style="background:#5090D0"></span>Controller</div>
-            <div class="role-drop-item" onclick="pickGenericRole('${roleValId}','${roleLblId}','SENTI','${roleMenuId}');togglePendingFlex('${p.id}',false)"><span class="role-dot" style="background:#50A878"></span>Sentinel</div>
-            <div class="role-drop-item" onclick="pickGenericRole('${roleValId}','${roleLblId}','INI','${roleMenuId}');togglePendingFlex('${p.id}',false)"><span class="role-dot" style="background:#C9A84C"></span>Initiator</div>
-            <div class="role-drop-item" onclick="pickGenericRole('${roleValId}','${roleLblId}','FLEX','${roleMenuId}');togglePendingFlex('${p.id}',true)"><span class="role-dot" style="background:#A070C0"></span>Flex</div>
+          <div class="role-drop-menu" id="${roleMenuId}" style="">
+            <div class="role-drop-item" onclick="pickGenericRole('${roleValId}','${roleLblId}','','${roleMenuId}');togglePendingFlex('${p.id}',false)">None</div>
+            <div class="role-drop-item" onclick="pickGenericRole('${roleValId}','${roleLblId}','DUELIST','${roleMenuId}');togglePendingFlex('${p.id}',false)"><span class="role-dot" style="background:#F87171"></span>Duelist</div>
+            <div class="role-drop-item" onclick="pickGenericRole('${roleValId}','${roleLblId}','CTRL','${roleMenuId}');togglePendingFlex('${p.id}',false)"><span class="role-dot" style="background:#60A5FA"></span>Controller</div>
+            <div class="role-drop-item" onclick="pickGenericRole('${roleValId}','${roleLblId}','SENTI','${roleMenuId}');togglePendingFlex('${p.id}',false)"><span class="role-dot" style="background:#34D399"></span>Sentinel</div>
+            <div class="role-drop-item" onclick="pickGenericRole('${roleValId}','${roleLblId}','INI','${roleMenuId}');togglePendingFlex('${p.id}',false)"><span class="role-dot" style="background:#FBBF24"></span>Initiator</div>
+            <div class="role-drop-item" onclick="pickGenericRole('${roleValId}','${roleLblId}','FLEX','${roleMenuId}');togglePendingFlex('${p.id}',true)"><span class="role-dot" style="background:#A78BFA"></span>Flex</div>
           </div>
         </div>
         <input type="hidden" id="${roleValId}" value="">
         <div class="flex-checklist" id="pflex-${p.id}">
-          <span class="flex-checklist-label">Can play:</span>
-          <div class="flex-pill" data-val="DUELIST" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#E05050"></span>Duelist</div>
-          <div class="flex-pill" data-val="CTRL" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#5090D0"></span>Controller</div>
-          <div class="flex-pill" data-val="SENTI" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#50A878"></span>Sentinel</div>
-          <div class="flex-pill" data-val="INI" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#C9A84C"></span>Initiator</div>
+          <div class="flex-inner">
+            <span class="flex-checklist-label">Can play:</span>
+            <div class="flex-pill" data-val="DUELIST" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#F87171"></span>Duelist</div>
+            <div class="flex-pill" data-val="CTRL" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#60A5FA"></span>Controller</div>
+            <div class="flex-pill" data-val="SENTI" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#34D399"></span>Sentinel</div>
+            <div class="flex-pill" data-val="INI" data-on="0" onclick="toggleFlexPill(this)"><span class="role-dot" style="background:#FBBF24"></span>Initiator</div>
+          </div>
         </div>
       </div>
       <div class="cfg-field" style="flex:0 0 85px;gap:4px">
@@ -2068,6 +3013,7 @@ async function clearPlayers() {
 }
 
 function renderPlayerList() {
+  autoSave();
   const el  = document.getElementById('player-entry-list');
   const lbl = document.getElementById('player-count-lbl');
   lbl.textContent = PLAYERS.length ? `— ${PLAYERS.length} player${PLAYERS.length !== 1 ? 's' : ''}` : '';
@@ -2087,7 +3033,19 @@ function renderPlayerList() {
 }
 
 function applyConfig() {
-  CFG = getSetupValues();
+  const raw = getSetupValues();
+
+  // Block if no cap set
+  if (!raw.cap || raw.cap <= 0) {
+    const el = document.getElementById('cfg-cap');
+    el.classList.add('error');
+    el.focus();
+    el.placeholder = 'Required!';
+    setTimeout(() => { el.classList.remove('error'); el.placeholder = '820'; }, 2200);
+    return;
+  }
+
+  CFG = raw;
   selected = new Set();
 
   const tierDisplay = CFG.tierName || 'Roster';
@@ -2102,12 +3060,11 @@ function applyConfig() {
   buildGrid();
   renderAll();
   renderRanked();
-  // Show tabs and settings gear
+  // Show nav items
   ['tab-builder','tab-all','tab-ranked','tab-roles','tab-duos'].forEach(id => {
     const el = document.getElementById(id);
     if (el) { el.style.display = ''; el.classList.remove('locked'); }
   });
-  document.querySelector('.settings-gear-btn').style.display = 'flex';
   document.getElementById('header-export-btn').style.display = 'block';
   sw('builder', document.getElementById('tab-builder'));
 }
@@ -2169,6 +3126,25 @@ function grade(score, min, max) {
 
 
 // ═══════════════════════════════════════════════════════════════
+//  VALORANT AGENTS  (role-based image selection)
+// ═══════════════════════════════════════════════════════════════
+const AGENT_BY_ROLE = {
+  DUELIST: ['jett', 'phoenix', 'reyna', 'raze', 'neon', 'yoru'],
+  CTRL:    ['brimstone', 'viper', 'omen', 'astra', 'harbor'],
+  SENTI:   ['sage', 'cypher', 'kj', 'chamber'],
+  INI:     ['sova', 'breach', 'skye', 'kayo', 'fade'],
+  FLEX:    ['jett', 'reyna', 'omen', 'sage', 'sova', 'viper', 'breach'],
+};
+const AGENT_ALL = ['jett','phoenix','reyna','raze','neon','yoru','brimstone','viper','omen','astra','harbor','sage','cypher','kj','chamber','sova','breach','skye','kayo','fade'];
+
+function getAgentForPlayer(name, role) {
+  const pool = AGENT_BY_ROLE[role] || AGENT_ALL;
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = (hash + name.charCodeAt(i)) | 0;
+  return pool[Math.abs(hash) % pool.length];
+}
+
+// ═══════════════════════════════════════════════════════════════
 //  BUILDER
 // ═══════════════════════════════════════════════════════════════
 function buildGrid() {
@@ -2192,7 +3168,7 @@ function buildGrid() {
     return s + (p?.mmr || 0);
   }, 0);
 
-  grid.innerHTML = pool.map(p => {
+  grid.innerHTML = pool.map((p, i) => {
     const isSel       = selected.has(p.name);
     const wouldTotal  = currentTotal + (isSel ? 0 : p.mmr);
     const wouldOver   = !isSel && selected.size >= CFG.rosterSize;
@@ -2206,13 +3182,22 @@ function buildGrid() {
     else if (isDisabled)       cls = 'disabled';
 
     const nameDisplay = p.isPLT ? (p.label || 'Promo Player') : p.name;
-    const roleDisplay = p.isPLT ? 'PROMO · LOWER TIER'        : p.role;
+    const roleDisplay = p.isPLT ? 'PROMO' : (p.role || '—');
+    const roleColor   = ROLE_COLORS[p.role] || 'var(--muted)';
+    const agentFile   = getAgentForPlayer(p.name, p.role);
 
-    return `<div class="player-card ${cls}" onclick="handleCardClick('${p.name.replace(/'/g, "\\'")}')">
-      <div class="badge-corner">${p.isPLT ? '<span style="color:var(--gold);font-size:8px">PLT</span>' : ''}</div>
-      <p class="pname" style="${p.isPLT ? 'color:var(--gold)' : ''}">${nameDisplay}</p>
-      <p class="pmmr">${p.mmr} MMR</p>
-      <p class="prole" style="${p.isPLT ? 'color:rgba(201,168,76,0.6)' : ''}">${roleDisplay}</p>
+    return `<div class="player-card ${cls}" style="animation-delay:${i * 35}ms;--card-role-color:${p.isPLT ? 'var(--gold)' : roleColor}" onclick="handleCardClick('${p.name.replace(/'/g, "\\'")}')">
+      <div class="card-agent-header">
+        <img class="agent-img${p.isPLT ? ' agent-img-plt' : ''}" src="agents/${agentFile}.png" alt="${agentFile}" loading="lazy">
+        ${p.isPLT ? '<span class="plt-badge">PLT</span>' : ''}
+      </div>
+      <div class="card-body">
+        <p class="pname" style="${p.isPLT ? 'color:var(--gold)' : ''}">${nameDisplay}</p>
+        <div class="card-footer">
+          <span class="pmmr">${p.mmr} <span style="font-size:9px;opacity:.5">MMR</span></span>
+          <span class="prole" style="color:${p.isPLT ? 'var(--gold)' : roleColor}">${roleDisplay}</span>
+        </div>
+      </div>
     </div>`;
   }).join('');
 
@@ -2237,6 +3222,24 @@ function handleCardClick(name) {
   buildGrid();
 }
 
+// Animates a numeric element from its current displayed value to `target`
+function animateNum(el, target, duration = 320) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    el.textContent = target;
+    return;
+  }
+  const from = parseInt(el.textContent, 10) || 0;
+  if (from === target) return;
+  const start = performance.now();
+  const ease = t => 1 - Math.pow(1 - t, 3); // ease-out-cubic
+  function step(now) {
+    const p = Math.min(1, (now - start) / duration);
+    el.textContent = Math.round(from + (target - from) * ease(p));
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
 function updateCap() {
   const pool  = allPlayersWithPLT();
   const total = [...selected].reduce((s, n) => {
@@ -2245,12 +3248,15 @@ function updateCap() {
   }, 0);
   const rem = CFG.cap - total;
   const pct = (total / CFG.cap) * 100;
-  const col = pct >= 100 ? '#C07070' : pct >= 95 ? '#BA7517' : pct >= 85 ? '#C9A84C' : 'var(--green)';
+  const col = pct >= 100 ? '#C07070' : pct >= 95 ? '#BA7517' : pct >= 85 ? '#FBBF24' : 'var(--green)';
 
-  document.getElementById('cap-used').textContent  = total || 0;
-  document.getElementById('cap-used').style.color  = pct >= 100 ? '#C07070' : 'var(--text)';
-  document.getElementById('cap-rem').textContent   = total ? rem : '—';
-  document.getElementById('cap-rem').style.color   = rem < 0 ? '#C07070' : rem <= 20 ? '#C9A84C' : 'var(--text)';
+  const usedEl = document.getElementById('cap-used');
+  const remEl  = document.getElementById('cap-rem');
+  animateNum(usedEl, total || 0);
+  usedEl.style.color = pct >= 100 ? '#C07070' : 'var(--text)';
+  if (total) animateNum(remEl, rem);
+  else remEl.textContent = '—';
+  remEl.style.color = rem < 0 ? '#C07070' : rem <= 20 ? '#FBBF24' : 'var(--text)';
   document.getElementById('cap-count').textContent = `${selected.size}/${CFG.rosterSize}`;
   document.getElementById('cap-fill').style.width  = Math.min(100, pct || 0) + '%';
   document.getElementById('cap-fill').style.background = col;
@@ -2492,7 +3498,7 @@ function renderRoles() {
 
   const total  = Object.values(roleReq).reduce((a,b)=>a+b,0);
   const active = total > 0 && total <= CFG.rosterSize;
-  const roleColors = { duelist:'#E05050', controller:'#5090D0', sentinel:'#50A878', initiator:'#C9A84C', flex:'#A070C0' };
+  const roleColors = { duelist:'#F87171', controller:'#60A5FA', sentinel:'#34D399', initiator:'#FBBF24', flex:'#A78BFA' };
 
   document.getElementById('roles-info').innerHTML = active
     ? 'Showing combos that match: ' + Object.entries(roleReq).filter(([,v])=>v>0)
@@ -2597,7 +3603,7 @@ function resetDuoPicker(aId, bId) {
 function addDuo() {
   const pair=validateDuoPick('duo-a','duo-b','duo-error',DUOS); if(!pair) return;
   DUOS.push(pair); resetDuoPicker('duo-a','duo-b');
-  renderDuoList(); rerenderCombos();
+  autoSave(); renderDuoList(); rerenderCombos();
 }
 function removeDuo(idx){ DUOS.splice(idx,1); renderDuoList(); rerenderCombos(); }
 function renderDuoList() {
@@ -2618,7 +3624,7 @@ function renderDuoList() {
 function addBadDuo() {
   const pair=validateDuoPick('badduo-a','badduo-b','badduo-error',BAD_DUOS); if(!pair) return;
   BAD_DUOS.push(pair); resetDuoPicker('badduo-a','badduo-b');
-  renderBadDuoList(); rerenderCombos();
+  autoSave(); renderBadDuoList(); rerenderCombos();
 }
 function removeBadDuo(idx){ BAD_DUOS.splice(idx,1); renderBadDuoList(); rerenderCombos(); }
 function renderBadDuoList() {
@@ -2646,7 +3652,7 @@ function lockPlayer() {
   LOCKED_PLAYERS.add(val);
   pickGenericRole('lock-val','lock-label','','lock-menu');
   document.getElementById('lock-label').textContent='Select player\u2026';
-  renderLockList(); rerenderCombos();
+  autoSave(); renderLockList(); rerenderCombos();
 }
 function unlockPlayer(name){ LOCKED_PLAYERS.delete(name); renderLockList(); rerenderCombos(); }
 function renderLockList() {
@@ -2673,13 +3679,10 @@ function renderDuos() {
 //  TAB SWITCH
 // ═══════════════════════════════════════════════════════════════
 function sw(id, btn) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll('.nav-item').forEach(t => t.classList.remove('on'));
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
   btn.classList.add('on');
   document.getElementById('p-' + id).classList.add('on');
-  // Gear button active state
-  const gearBtn = document.querySelector('.settings-gear-btn');
-  if (gearBtn) gearBtn.classList.toggle('active', id === 'settings');
   if (id === 'all')      renderAll();
   if (id === 'ranked')   renderRanked();
   if (id === 'roles')    { updateRolePickerUI(); renderRoles(); }
@@ -2772,8 +3775,8 @@ function toggleSetting(key) {
   if (!toggle || !lbl) return;
   const on = SETTINGS[key];
   toggle.querySelector('.toggle-thumb').style.transform = on ? 'translateX(13px)' : '';
-  toggle.querySelector('.toggle-track').style.background = on ? 'rgba(224,48,48,0.15)' : '';
-  toggle.querySelector('.toggle-track').style.borderColor = on ? 'rgba(224,48,48,0.3)' : '';
+  toggle.querySelector('.toggle-track').style.background = on ? 'rgba(91,139,247,0.15)' : '';
+  toggle.querySelector('.toggle-track').style.borderColor = on ? 'rgba(91,139,247,0.3)' : '';
   toggle.querySelector('.toggle-thumb').style.background = on ? 'var(--red)' : '';
   lbl.textContent = on ? 'On' : 'Off';
 }
@@ -2783,8 +3786,324 @@ function toggleSetting(key) {
 // ═══════════════════════════════════════════════════════════════
 function toggleTheme() {
   const isLight = document.body.classList.toggle('light');
-  document.getElementById('theme-lbl').textContent = isLight ? 'Dark' : 'Light';
+  const label = isLight ? 'Dark' : 'Light';
+  ['theme-lbl','theme-lbl2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = label;
+  });
 }
+
+// ═══════════════════════════════════════════════════════════════
+//  SCOUTING
+// ═══════════════════════════════════════════════════════════════
+const SCOUT_STATUS_ORDER  = { signed:0, rfa:1, de:2, dnd:3 };
+const SCOUT_STATUS_COLORS = { signed:'#34D399', rfa:'#F59E0B', de:'#5B8BF7', dnd:'#565878' };
+const SCOUT_STATUS_LABELS = { signed:'Signed', rfa:'RFA', de:'DE', dnd:'DND' };
+const SCOUT_STATUS_CYCLE  = ['signed','rfa','de','dnd'];
+const VDC_TIERS = ['Recruit','Prospect','Apprentice','Expert','Mythic'];
+const VDC_TIER_COLORS = { Recruit:'#A78BFA', Prospect:'#5B8BF7', Apprentice:'#34D399', Expert:'#FBBF24', Mythic:'#F87171' };
+
+function pickScoutStatus(val) {
+  document.getElementById('scout-status-val').value = val;
+  const lbl = document.getElementById('scout-status-label');
+  lbl.textContent = SCOUT_STATUS_LABELS[val] || val;
+  lbl.style.color = SCOUT_STATUS_COLORS[val] || 'var(--muted)';
+  const wrap = document.getElementById('scout-status-menu').closest('.role-drop-wrap');
+  if (wrap) wrap.classList.remove('open');
+}
+
+function pickScoutTier(val) {
+  document.getElementById('scout-tier-val').value = val;
+  const lbl = document.getElementById('scout-tier-label');
+  lbl.textContent = val || '— tier —';
+  lbl.style.color = val ? (VDC_TIER_COLORS[val] || 'var(--text)') : 'var(--muted)';
+  const wrap = document.getElementById('scout-tier-menu').closest('.role-drop-wrap');
+  if (wrap) wrap.classList.remove('open');
+}
+
+function setScoutTierFilter(tier) {
+  scoutTierFilter = tier;
+  document.querySelectorAll('.scout-tier-tab').forEach(t => {
+    t.classList.toggle('on', t.dataset.tier === tier);
+  });
+  renderScoutList();
+}
+
+function addScout() {
+  const name   = document.getElementById('scout-name').value.trim();
+  const mmr    = parseInt(document.getElementById('scout-mmr').value)   || 0;
+  const role   = document.getElementById('scout-role-val').value;
+  const tier   = document.getElementById('scout-tier-val').value;
+  const status = document.getElementById('scout-status-val').value || 'rfa';
+  const notes  = document.getElementById('scout-notes').value.trim();
+  const acs    = parseFloat(document.getElementById('scout-acs').value) || 0;
+  const kd     = parseFloat(document.getElementById('scout-kd').value)  || 0;
+  const errEl  = document.getElementById('scout-add-error');
+
+  if (!name) {
+    errEl.textContent = 'Name is required.';
+    errEl.style.display = 'block';
+    document.getElementById('scout-name').focus();
+    setTimeout(() => { errEl.style.display = 'none'; }, 2200);
+    return;
+  }
+  errEl.style.display = 'none';
+
+  SCOUTS.push({ id: _scoutIdSeq++, name: esc(name).slice(0,64), mmr, role, tier: esc(tier).slice(0,12), status, notes: esc(notes).slice(0,200), acs, kd });
+
+  ['scout-name','scout-mmr','scout-tier','scout-notes','scout-acs','scout-kd'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  pickScoutStatus('rfa');
+  pickScoutTier('');
+  pickGenericRole('scout-role-val','scout-role-label','','scout-role-menu');
+
+  autoSave();
+  renderScoutList();
+}
+
+function removeScout(id) {
+  SCOUTS = SCOUTS.filter(s => s.id !== id);
+  autoSave();
+  renderScoutList();
+}
+
+function cycleScoutStatus(id) {
+  const scout = SCOUTS.find(s => s.id === id);
+  if (!scout) return;
+  const idx = SCOUT_STATUS_CYCLE.indexOf(scout.status);
+  scout.status = SCOUT_STATUS_CYCLE[(idx + 1) % SCOUT_STATUS_CYCLE.length];
+  autoSave();
+  renderScoutList();
+}
+
+function scoutSort(key) {
+  if (scoutSortKey === key) { scoutSortDir *= -1; }
+  else { scoutSortKey = key; scoutSortDir = 1; }
+  renderScoutList();
+}
+
+function renderScoutList() {
+  const tbody = document.getElementById('scout-tbody');
+  const empty = document.getElementById('scout-empty');
+  if (!tbody) return;
+
+  // Update sort arrows
+  document.querySelectorAll('[id^="sarrow-"]').forEach(el => el.textContent = '');
+  const arrowEl = document.getElementById('sarrow-' + scoutSortKey);
+  if (arrowEl) arrowEl.textContent = scoutSortDir === 1 ? '▲' : '▼';
+  document.querySelectorAll('.scout-table thead th').forEach(th => th.classList.remove('sort-active'));
+  // mark active header (find by arrow span)
+  if (arrowEl) arrowEl.closest('th').classList.add('sort-active');
+
+  const filtered = scoutTierFilter
+    ? SCOUTS.filter(s => s.tier === scoutTierFilter)
+    : SCOUTS;
+
+  const sorted = [...filtered].sort((a, b) => {
+    let av = a[scoutSortKey], bv = b[scoutSortKey];
+    if (scoutSortKey === 'status') { av = SCOUT_STATUS_ORDER[av] ?? 99; bv = SCOUT_STATUS_ORDER[bv] ?? 99; }
+    if (scoutSortKey === 'tier') {
+      const ti = t => VDC_TIERS.indexOf(t);
+      return (ti(av) - ti(bv)) * scoutSortDir;
+    }
+    if (typeof av === 'string') return av.localeCompare(bv) * scoutSortDir;
+    return (av - bv) * scoutSortDir;
+  });
+
+  if (sorted.length === 0) {
+    tbody.innerHTML = '';
+    if (empty) {
+      empty.textContent = scoutTierFilter
+        ? `No ${scoutTierFilter} players scouted yet.`
+        : 'No players scouted yet. Add someone above to get started.';
+      empty.style.display = 'block';
+    }
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  tbody.innerHTML = sorted.map((s, i) => {
+    const roleColor  = ROLE_COLORS[s.role] || '#565878';
+    const roleLbl    = ROLE_LABELS[s.role] || '—';
+    const statusCls  = s.status || 'sign';
+    const statusLbl  = SCOUT_STATUS_LABELS[s.status] || s.status;
+    const tierColor  = VDC_TIER_COLORS[s.tier] || 'var(--muted)';
+    const tierLbl    = s.tier || '—';
+    const kdStr      = s.kd  ? s.kd.toFixed(2) : '—';
+    const acsStr     = s.acs ? s.acs.toFixed(0) : '—';
+    const mmrStr     = s.mmr ? s.mmr            : '—';
+    const delay      = Math.min(i * 30, 200);
+    return `<tr style="animation-delay:${delay}ms">
+      <td><strong style="color:var(--text);font-weight:500">${s.name}</strong></td>
+      <td>${mmrStr}</td>
+      <td><span class="scout-role-dot" style="background:${roleColor}"></span>${roleLbl}</td>
+      <td><span style="color:${tierColor};font-weight:500">${tierLbl}</span></td>
+      <td>${acsStr}</td>
+      <td>${kdStr}</td>
+      <td><span class="scout-status ${statusCls}" onclick="cycleScoutStatus(${s.id})" title="Click to change status" style="cursor:pointer">${statusLbl}</span></td>
+      <td class="notes-cell" title="${s.notes}">${s.notes || '—'}</td>
+      <td>
+        <div style="display:flex;gap:5px">
+          <button class="scout-action-btn sim" onclick="simIfSigned(${s.id})" title="Sim if signed">Sim</button>
+          <button class="scout-action-btn danger" onclick="removeScout(${s.id})" title="Remove">✕</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function simIfSigned(id) {
+  const scout = SCOUTS.find(s => s.id === id);
+  if (!scout) return;
+
+  // Check if roster is built
+  if (!CFG.cap || PLAYERS.length === 0) {
+    showSimResult(id, 'bad', 'Build a roster first (Setup → Apply & Build) before simulating.');
+    return;
+  }
+
+  // Temporarily inject scout as a player
+  const mockPlayer = {
+    name: scout.name,
+    mmr:  scout.mmr || Math.round(CFG.cap / CFG.rosterSize),
+    role: scout.role || 'FLEX',
+    flexRoles: null,
+    acs: scout.acs || null,
+    kd:  scout.kd  || null,
+  };
+
+  // Swap global PLAYERS temporarily
+  const origPlayers = PLAYERS;
+  PLAYERS = [...PLAYERS.filter(p => p.name !== scout.name), mockPlayer];
+
+  const allCombos = genCombos();
+  PLAYERS = origPlayers;
+
+  const validCombos = allCombos.filter(c => {
+    if (!c.valid) return false;
+    for (const name of LOCKED_PLAYERS) {
+      if (!c.team.some(p => p.name === name)) return false;
+    }
+    return c.team.some(p => p.name === scout.name);
+  });
+
+  if (validCombos.length === 0) {
+    showSimResult(id, 'bad', `No valid combos with ${scout.name} under the cap. Check MMR vs cap (${CFG.cap}).`);
+  } else {
+    const best = validCombos.sort((a,b) => b.score - a.score)[0];
+    const names = best.team.map(p => p.name).join(', ');
+    showSimResult(id, 'good', `${validCombos.length} valid combo${validCombos.length>1?'s':''} found. Best: [${names}] — rem ${best.rem} MMR`);
+  }
+}
+
+function showSimResult(id, type, msg) {
+  // Remove any existing result rows
+  document.querySelectorAll('.scout-sim-row').forEach(r => r.remove());
+
+  const tbody = document.getElementById('scout-tbody');
+  if (!tbody) return;
+
+  // Find the row for this scout
+  const rows = tbody.querySelectorAll('tr');
+  const scout = SCOUTS.find(s => s.id === id);
+  if (!scout) return;
+
+  // Find row index in sorted order
+  let targetRow = null;
+  rows.forEach(row => {
+    const btn = row.querySelector('.scout-action-btn.sim');
+    if (btn && btn.getAttribute('onclick') === `simIfSigned(${id})`) targetRow = row;
+  });
+  if (!targetRow) return;
+
+  const resultRow = document.createElement('tr');
+  resultRow.className = 'scout-sim-row';
+  resultRow.innerHTML = `<td colspan="9" class="scout-sim-result ${type}">${msg} <button onclick="this.closest('tr').remove()" style="margin-left:8px;background:none;border:none;color:inherit;opacity:.5;cursor:pointer;font-size:11px">✕</button></td>`;
+  targetRow.after(resultRow);
+}
+
+// ─── SHARE / IMPORT ──────────────────────────────────────────────
+function shareScouts() {
+  if (SCOUTS.length === 0) {
+    showToast('No players scouted yet.');
+    return;
+  }
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(SCOUTS))));
+  const url = location.href.split('#')[0] + '#scout=' + encoded;
+  navigator.clipboard.writeText(url).then(() => {
+    showToast('✓ Link copied to clipboard');
+  }).catch(() => {
+    // Fallback: prompt
+    prompt('Copy this link:', url);
+  });
+}
+
+function showToast(msg) {
+  const el = document.getElementById('scout-toast');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+function checkScoutShare() {
+  const hash = location.hash;
+  if (!hash.startsWith('#scout=')) return;
+  try {
+    const raw = decodeURIComponent(escape(atob(hash.slice(7))));
+    const data = JSON.parse(raw);
+    if (!Array.isArray(data) || data.length === 0) return;
+    _pendingScoutImport = data;
+    const banner = document.getElementById('scout-import-banner');
+    if (banner) banner.style.display = 'flex';
+    // Auto-switch to scouting tab
+    const tab = document.getElementById('tab-scouting');
+    if (tab) sw('scouting', tab);
+  } catch(e) {}
+  // Clean hash from URL
+  history.replaceState(null, '', location.pathname + location.search);
+}
+
+function importSharedScouts() {
+  if (!_pendingScoutImport) return;
+  let added = 0;
+  const existingNames = new Set(SCOUTS.map(s => s.name.toLowerCase()));
+  _pendingScoutImport.forEach(s => {
+    const name = esc(String(s.name || '')).slice(0,64);
+    if (!name || existingNames.has(name.toLowerCase())) return;
+    SCOUTS.push({
+      id:     _scoutIdSeq++,
+      name,
+      mmr:    parseInt(s.mmr)  || 0,
+      role:   ['DUELIST','CTRL','SENTI','INI','FLEX',''].includes(s.role) ? s.role : '',
+      tier:   VDC_TIERS.includes(s.tier) ? s.tier : '',
+      status: ['signed','rfa','de','dnd'].includes(s.status) ? s.status : (s.status === 'sign' ? 'signed' : 'rfa'),
+      notes:  esc(String(s.notes || '')).slice(0,200),
+      acs:    parseFloat(s.acs) || 0,
+      kd:     parseFloat(s.kd)  || 0,
+    });
+    existingNames.add(name.toLowerCase());
+    added++;
+  });
+  _pendingScoutImport = null;
+  dismissScoutBanner();
+  autoSave();
+  renderScoutList();
+  showToast(`✓ Imported ${added} scout${added !== 1 ? 's' : ''}`);
+}
+
+function dismissScoutBanner() {
+  const banner = document.getElementById('scout-import-banner');
+  if (banner) banner.style.display = 'none';
+  _pendingScoutImport = null;
+  history.replaceState(null, '', location.pathname + location.search);
+}
+
+// ─── BOOT ────────────────────────────────────────────────────────
+autoLoad();
+checkScoutShare();
 </script>
 </body>
 </html>
