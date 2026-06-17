@@ -1,7 +1,7 @@
-const SCOUT_STATUS_ORDER  = { signed:0, rfa:1, de:2, dnd:3 };
-const SCOUT_STATUS_COLORS = { signed:'#34D399', rfa:'#F59E0B', de:'#5B8BF7', dnd:'#565878' };
-const SCOUT_STATUS_LABELS = { signed:'Signed', rfa:'RFA', de:'DE', dnd:'DND' };
-const SCOUT_STATUS_CYCLE  = ['signed','rfa','de','dnd'];
+const SCOUT_STATUS_ORDER  = { signed:0, fa:1, rfa:2, de:3, dnd:4 };
+const SCOUT_STATUS_COLORS = { signed:'#34D399', fa:'#2DD4BF', rfa:'#F59E0B', de:'#5B8BF7', dnd:'#565878' };
+const SCOUT_STATUS_LABELS = { signed:'Signed', fa:'FA', rfa:'RFA', de:'DE', dnd:'DND' };
+const SCOUT_STATUS_CYCLE  = ['signed','fa','rfa','de','dnd'];
 const VDC_TIERS = ['Recruit','Prospect','Apprentice','Expert','Mythic'];
 const VDC_TIER_COLORS = { Recruit:'#A78BFA', Prospect:'#5B8BF7', Apprentice:'#34D399', Expert:'#FBBF24', Mythic:'#F87171' };
 
@@ -103,6 +103,27 @@ function bulkAddScouts() {
   else showToast('No new players added (duplicates skipped)');
 }
 
+let _scoutSessionActive = false;
+let _scoutSessionCount  = 0;
+
+function toggleScoutSession() {
+  _scoutSessionActive = !_scoutSessionActive;
+  _scoutSessionCount  = 0;
+  const btn = document.getElementById('scout-session-btn');
+  const ctr = document.getElementById('scout-session-counter');
+  if (btn) {
+    btn.classList.toggle('on', _scoutSessionActive);
+    btn.textContent = _scoutSessionActive ? 'Session On' : 'Session';
+  }
+  if (ctr) ctr.style.display = _scoutSessionActive ? 'inline' : 'none';
+  _updateSessionCounter();
+}
+
+function _updateSessionCounter() {
+  const ctr = document.getElementById('scout-session-counter');
+  if (ctr) ctr.textContent = _scoutSessionCount + ' added';
+}
+
 function addScout() {
   const name    = document.getElementById('scout-name').value.trim();
   const mmr     = parseInt(document.getElementById('scout-mmr').value)    || 0;
@@ -125,13 +146,24 @@ function addScout() {
 
   SCOUTS.push({ id: _scoutIdSeq++, name: esc(name).slice(0,64), mmr, roles, tier, status, notes: esc(notes).slice(0,400), tracker: esc(tracker).slice(0,300), acs, kd });
 
-  ['scout-name','scout-mmr','scout-notes','scout-tracker'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
-  pickScoutStatus('rfa');
-  pickScoutTier('');
-  resetScoutRolePills();
+  if (_scoutSessionActive) {
+    // keep tier / roles / status — only clear name, mmr, notes, tracker
+    ['scout-name','scout-mmr','scout-notes','scout-tracker'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    _scoutSessionCount++;
+    _updateSessionCounter();
+    document.getElementById('scout-name').focus();
+  } else {
+    ['scout-name','scout-mmr','scout-notes','scout-tracker'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    pickScoutStatus('rfa');
+    pickScoutTier('');
+    resetScoutRolePills();
+  }
 
   autoSave();
   renderScoutList();
@@ -150,6 +182,36 @@ function cycleScoutStatus(id) {
   scout.status = SCOUT_STATUS_CYCLE[(idx + 1) % SCOUT_STATUS_CYCLE.length];
   autoSave();
   renderScoutList();
+}
+
+function editScoutMmr(e, id) {
+  e.stopPropagation();
+  const span = e.currentTarget;
+  if (span.querySelector('input')) return;
+  const scout = SCOUTS.find(s => s.id === id);
+  if (!scout) return;
+
+  const input = document.createElement('input');
+  input.type = 'number';
+  input.value = scout.mmr || '';
+  input.placeholder = '0';
+  input.style.cssText = 'width:60px;background:var(--dark3);border:1px solid rgba(91,139,247,0.45);border-radius:4px;color:var(--text);font-family:\'DM Mono\',monospace;font-size:12px;padding:2px 6px;outline:none;-moz-appearance:textfield;appearance:textfield';
+  span.textContent = '';
+  span.appendChild(input);
+  input.focus();
+  input.select();
+
+  function save() {
+    const val = parseInt(input.value) || 0;
+    scout.mmr = val;
+    autoSave();
+    renderScoutList();
+  }
+  input.addEventListener('blur', save);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+    if (e.key === 'Escape') { input.removeEventListener('blur', save); renderScoutList(); }
+  });
 }
 
 function scoutSort(key) {
@@ -331,17 +393,17 @@ function renderScoutList() {
     const statusLbl  = SCOUT_STATUS_LABELS[s.status] || s.status;
     const tierColor  = VDC_TIER_COLORS[s.tier] || 'var(--muted)';
     const tierLbl    = s.tier || '—';
-    const mmrStr     = s.mmr ? s.mmr : '—';
+    const mmrStr     = s.mmr || '—';
     const delay      = Math.min(i * 30, 200);
     const isDND      = s.status === 'dnd';
     const safeName   = s.name.replace(/'/g,"\\'");
     const vdcUrl     = 'https://vdc.gg/player/' + s.name.replace(/#/g,'%23') + '?season=10&type=season&by=summary';
-    const trackerBtn = s.tracker ? `<a href="${s.tracker}" target="_blank" rel="noopener" class="scout-action-btn" title="Open tracker" style="text-decoration:none">🔗</a>` : '';
+    const trackerBtn = s.tracker ? `<a href="${s.tracker}" target="_blank" rel="noopener" class="scout-action-btn" title="Open tracker" style="text-decoration:none">↗</a>` : '';
     const vdcBtn     = `<button class="scout-action-btn" onclick="window.open('${vdcUrl}','_blank')" title="VDC profile">VDC</button>`;
     const noteVal    = (s.notes||'').replace(/"/g,'&quot;');
     return `<tr style="animation-delay:${delay}ms" class="${isDND?'scout-dnd':''}">
       <td><strong style="color:var(--text);font-weight:500">${s.name}</strong></td>
-      <td>${mmrStr}</td>
+      <td><span class="scout-editable scout-mmr-cell" onclick="editScoutMmr(event,${s.id})" title="Click to edit MMR">${mmrStr}</span></td>
       <td><div class="scout-editable" style="display:flex;gap:3px;align-items:center;min-width:28px" onclick="openRolesPop(event,${s.id})" title="Edit roles">${roleDots}</div></td>
       <td><span class="scout-editable" style="color:${tierColor};font-weight:500" onclick="openTierPop(event,${s.id})" title="Edit tier">${tierLbl}</span></td>
       <td><span class="scout-status ${statusCls}" onclick="cycleScoutStatus(${s.id})" title="Click to cycle status" style="cursor:pointer">${statusLbl}</span></td>

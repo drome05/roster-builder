@@ -183,7 +183,7 @@ function updateCap() {
   else remEl.textContent = '—';
   remEl.style.color = rem < 0 ? '#C07070' : rem <= 20 ? '#FBBF24' : 'var(--text)';
   document.getElementById('cap-count').textContent = `${selected.size}/${CFG.rosterSize}`;
-  document.getElementById('cap-fill').style.width  = Math.min(100, pct || 0) + '%';
+  document.getElementById('cap-fill').style.transform = 'scaleX(' + Math.min(1, (pct || 0) / 100) + ')';
   document.getElementById('cap-fill').style.background = col;
 
   const status = document.getElementById('cap-status');

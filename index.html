@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Roster Builder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/main.css">
 </head>
@@ -33,7 +35,7 @@
     </nav>
     <div class="sidebar-bottom">
       <span class="watermark">made by aziel</span>
-      <div class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+      <div class="theme-toggle theme-ctl" onclick="toggleTheme()" title="Toggle theme">
         <div class="toggle-track"><div class="toggle-thumb"></div></div>
         <span id="theme-lbl">Light</span>
       </div>
@@ -519,7 +521,7 @@
           <p style="font-size:12px;color:var(--text);margin-bottom:4px">Theme</p>
           <p style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">Switch between dark and light mode</p>
         </div>
-        <div class="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode" style="margin-left:auto">
+        <div class="theme-toggle theme-ctl" onclick="toggleTheme()" title="Toggle light/dark mode" style="margin-left:auto">
           <div class="toggle-track"><div class="toggle-thumb"></div></div>
           <span id="theme-lbl2">Light</span>
         </div>
@@ -561,10 +563,18 @@
           <p style="font-size:12px;color:var(--text);margin-bottom:4px">Scale content text size</p>
           <p style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">Zoom the main content area for larger text</p>
         </div>
-        <div class="font-size-toggle" style="margin-left:auto">
-          <button class="font-size-btn on" id="fsbtn-1"    onclick="setFontSize(1)"    style="font-size:11px">A</button>
-          <button class="font-size-btn"    id="fsbtn-115"  onclick="setFontSize(1.15)" style="font-size:13px">A</button>
-          <button class="font-size-btn"    id="fsbtn-13"   onclick="setFontSize(1.3)"  style="font-size:15px">A</button>
+        <div class="text-size-control">
+          <span class="size-icon sm">A</span>
+          <div class="size-range-wrap">
+            <div class="size-range-fill" id="size-range-fill"></div>
+            <input type="range" class="size-range" id="font-size-range"
+                   min="80" max="130" step="5" value="100"
+                   oninput="_previewSizeSlider(this.value)"
+                   onchange="setFontSizeFromSlider(this.value)"
+                   aria-label="Text size">
+          </div>
+          <span class="size-icon lg">A</span>
+          <span class="size-val" id="size-val">100%</span>
         </div>
       </div>
     </div>
@@ -601,7 +611,11 @@
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
           <p class="section-lbl" style="margin:0">Scout Player</p>
-          <span class="scout-bulk-toggle" onclick="toggleScoutBulk()">+ Bulk paste names</span>
+          <div style="display:flex;align-items:center;gap:10px">
+            <button id="scout-session-btn" class="scout-session-btn" onclick="toggleScoutSession()" title="Keep tier, roles & status between adds">Session</button>
+            <span id="scout-session-counter" style="display:none;font-size:10px;font-family:'DM Mono',monospace;color:var(--muted)"></span>
+            <span class="scout-bulk-toggle" onclick="toggleScoutBulk()">+ Bulk paste</span>
+          </div>
         </div>
         <button class="share-btn" onclick="shareScouts()" title="Copy shareable link to clipboard">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
@@ -667,6 +681,7 @@
             </button>
             <div class="role-drop-menu" id="scout-status-menu">
               <div class="role-drop-item" onclick="pickScoutStatus('signed')"><span class="role-dot" style="background:#34D399"></span>Signed <span style="color:var(--muted);font-size:10px;margin-left:4px">Already on team</span></div>
+              <div class="role-drop-item" onclick="pickScoutStatus('fa')"><span class="role-dot" style="background:#2DD4BF"></span>FA <span style="color:var(--muted);font-size:10px;margin-left:4px">Free agent</span></div>
               <div class="role-drop-item" onclick="pickScoutStatus('rfa')"><span class="role-dot" style="background:#F59E0B"></span>RFA <span style="color:var(--muted);font-size:10px;margin-left:4px">Sub only</span></div>
               <div class="role-drop-item" onclick="pickScoutStatus('de')"><span class="role-dot" style="background:#5B8BF7"></span>DE <span style="color:var(--muted);font-size:10px;margin-left:4px">Draft eligible</span></div>
               <div class="role-drop-item" onclick="pickScoutStatus('dnd')"><span class="role-dot" style="background:#565878"></span>DND <span style="color:var(--muted);font-size:10px;margin-left:4px">Pass</span></div>
@@ -682,7 +697,7 @@
           <input type="text" id="scout-notes" placeholder="Good comms, entry diff, passive…" maxlength="400" onkeydown="if(event.key==='Enter')addScout()">
         </div>
         <div class="scout-field" style="flex:1;min-width:140px">
-          <label>Tracker / VDC Link</label>
+          <label>Tracker Link</label>
           <input type="url" id="scout-tracker" placeholder="https://…" maxlength="300" onkeydown="if(event.key==='Enter')addScout()">
         </div>
         <div class="scout-field" style="flex:0 0 auto">
@@ -715,6 +730,7 @@
       <span style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.08em;text-transform:uppercase;margin-right:4px">Status</span>
       <div class="scout-filter-pill on" data-status-filter="" onclick="setScoutStatusFilter('')">All</div>
       <div class="scout-filter-pill status-signed" data-status-filter="signed" onclick="setScoutStatusFilter('signed')">Signed</div>
+      <div class="scout-filter-pill status-fa"     data-status-filter="fa"     onclick="setScoutStatusFilter('fa')">FA</div>
       <div class="scout-filter-pill status-rfa"    data-status-filter="rfa"    onclick="setScoutStatusFilter('rfa')">RFA</div>
       <div class="scout-filter-pill status-de"     data-status-filter="de"     onclick="setScoutStatusFilter('de')">DE</div>
       <div class="scout-filter-pill status-dnd"    data-status-filter="dnd"    onclick="setScoutStatusFilter('dnd')">DND</div>
@@ -808,6 +824,7 @@
     checkScoutShare();
     const _savedZoom = localStorage.getItem('vdc-font-size');
     if (_savedZoom) setFontSize(parseFloat(_savedZoom));
+    else _syncSizeSlider(100);
   </script>
 </body>
 </html>

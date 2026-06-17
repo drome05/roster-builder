@@ -46,7 +46,7 @@ function autoLoad() {
       mmr:     parseInt(s.mmr)  || 0,
       role:    ['DUELIST','CTRL','SENTI','INI','FLEX',''].includes(s.role) ? s.role : '',
       tier:    VDC_TIERS.includes(s.tier) ? s.tier : '',
-      status:  ['signed','rfa','de','dnd'].includes(s.status) ? s.status : (s.status === 'sign' ? 'signed' : 'rfa'),
+      status:  ['signed','fa','rfa','de','dnd'].includes(s.status) ? s.status : (s.status === 'sign' ? 'signed' : 'rfa'),
       roles:   Array.isArray(s.roles) ? s.roles.filter(r => ROLE_COLORS[r]) : (s.role && ROLE_COLORS[s.role] ? [s.role] : []),
       tracker: esc(String(s.tracker || '')).slice(0,300),
       notes:   esc(String(s.notes || '')).slice(0,400),
@@ -439,9 +439,44 @@ function showToast(msg) {
 }
 
 function setFontSize(scale) {
+  const pct = Math.round(scale * 100);
   document.documentElement.style.setProperty('--content-zoom', scale);
   localStorage.setItem('vdc-font-size', scale);
-  document.querySelectorAll('.font-size-btn').forEach(b => {
-    b.classList.toggle('on', b.id === 'fsbtn-' + String(scale).replace('.',''));
-  });
+  _syncSizeSlider(pct);
+}
+
+function setFontSizeFromSlider(pct) {
+  const scale = pct / 100;
+  document.documentElement.style.setProperty('--content-zoom', scale);
+  localStorage.setItem('vdc-font-size', scale);
+  _syncSizeSlider(pct);
+}
+
+function _previewSizeSlider(pct) {
+  const fill = document.getElementById('size-range-fill');
+  const lbl  = document.getElementById('size-val');
+  const slider = document.getElementById('font-size-range');
+  if (lbl) lbl.textContent = pct + '%';
+  if (fill && slider) {
+    const min = parseFloat(slider.min), max = parseFloat(slider.max);
+    fill.style.width = ((pct - min) / (max - min) * 100) + '%';
+  }
+}
+
+function _syncSizeSlider(pct) {
+  const slider = document.getElementById('font-size-range');
+  const fill   = document.getElementById('size-range-fill');
+  const lbl    = document.getElementById('size-val');
+  if (slider) slider.value = pct;
+  if (lbl) {
+    lbl.textContent = pct + '%';
+    lbl.classList.remove('pop');
+    void lbl.offsetWidth;
+    lbl.classList.add('pop');
+  }
+  if (fill && slider) {
+    const min = parseFloat(slider.min), max = parseFloat(slider.max);
+    const ratio = (pct - min) / (max - min);
+    fill.style.width = (ratio * 100) + '%';
+  }
 }

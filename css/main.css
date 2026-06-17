@@ -108,8 +108,8 @@
       transition: transform .2s, background .2s;
     }
 
-    body.light .toggle-track { background: rgba(61, 107, 224, 0.15); border-color: rgba(61, 107, 224, 0.3); }
-    body.light .toggle-thumb { transform: translateX(13px); background: var(--red); }
+    body.light .theme-ctl .toggle-track { background: rgba(61, 107, 224, 0.15); border-color: rgba(61, 107, 224, 0.3); }
+    body.light .theme-ctl .toggle-thumb { transform: translateX(13px); background: var(--red); }
 
     /* ─── WATERMARK ─────────────────────────────────────────── */
     .watermark {
@@ -144,7 +144,6 @@
     .sidebar {
       background: linear-gradient(180deg, #07081E 0%, #060714 60%, #060611 100%);
       border-right: 1px solid rgba(91, 139, 247, 0.10);
-      position: relative;
       display: flex;
       flex-direction: column;
       position: sticky;
@@ -357,8 +356,8 @@
     }
 
     @keyframes panelIn {
-      from { opacity: 0; transform: translateY(14px); filter: blur(2px); }
-      to   { opacity: 1; transform: translateY(0);   filter: blur(0); }
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -721,7 +720,10 @@
     .cap-fill {
       height: 100%;
       border-radius: 3px;
-      transition: width 300ms var(--ease-out), background 300ms var(--ease-out);
+      width: 100%;
+      transform-origin: left;
+      transform: scaleX(0);
+      transition: transform 300ms var(--ease-out), background 300ms var(--ease-out);
     }
 
     #cap-status {
@@ -764,10 +766,12 @@
       user-select: none;
       overflow: hidden;
       animation: cardIn 280ms var(--ease-out) both;
-      /* perspective for 3D tilt */
       transform-style: preserve-3d;
-      will-change: transform;
       position: relative;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .player-card:hover:not(.locked):not(.disabled) { will-change: transform; }
     }
 
     /* shine sweep pseudo-element */
@@ -853,17 +857,19 @@
       content: '';
       position: absolute;
       top: 0; left: 0; right: 0;
-      height: 2px;
+      height: 3px;
       background: var(--card-role-color, var(--muted));
       opacity: .7;
+      transform-origin: top;
+      transform: scaleY(0.67);
       z-index: 2;
-      transition: opacity 220ms var(--ease-out), height 220ms var(--ease-out);
+      transition: opacity 220ms var(--ease-out), transform 220ms var(--ease-out);
     }
 
     @media (hover: hover) and (pointer: fine) {
       .player-card:hover:not(.locked):not(.disabled) .card-agent-header::before {
         opacity: 1;
-        height: 3px;
+        transform: scaleY(1);
       }
     }
 
@@ -1081,7 +1087,6 @@
       opacity: 0;
       transition:
         grid-template-rows 220ms var(--ease-out),
-        margin-top 220ms var(--ease-out),
         opacity 180ms var(--ease-out);
     }
     .flex-checklist > .flex-inner {
@@ -1093,7 +1098,7 @@
       gap: 6px;
       flex-wrap: wrap;
       align-items: center;
-      transition: padding 220ms var(--ease-out);
+      transition: none;
     }
     .flex-checklist.visible {
       grid-template-rows: 1fr;
@@ -1421,7 +1426,9 @@
       letter-spacing: .04em;
       white-space: nowrap;
     }
-    .scout-status.sign   { background: rgba(52,211,153,0.12);  color: #34D399; border: 1px solid rgba(52,211,153,0.35); }
+    .scout-status.sign,
+    .scout-status.signed { background: rgba(52,211,153,0.12);  color: #34D399; border: 1px solid rgba(52,211,153,0.35); }
+    .scout-status.fa     { background: rgba(45,212,191,0.12);  color: #2DD4BF; border: 1px solid rgba(45,212,191,0.35); }
     .scout-status.rfa    { background: rgba(245,158,11,0.12);  color: #F59E0B; border: 1px solid rgba(245,158,11,0.3);  }
     .scout-status.de     { background: rgba(91,139,247,0.12);  color: #5B8BF7; border: 1px solid rgba(91,139,247,0.3);  }
     .scout-status.dnd    { background: rgba(255,255,255,0.04); color: var(--muted); border: 1px solid var(--border); text-decoration: line-through; }
@@ -1530,23 +1537,169 @@
       transition: border-color 150ms var(--ease-out), color 150ms var(--ease-out), background 150ms var(--ease-out);
     }
     .scout-filter-pill.on { border-color: rgba(91,139,247,0.45); background: rgba(91,139,247,0.10); color: var(--red); }
-    .scout-filter-pill.status-signed.on { border-color:rgba(52,211,153,0.5); background:rgba(52,211,153,0.08); color:#34D399; }
-    .scout-filter-pill.status-rfa.on    { border-color:rgba(245,158,11,0.5); background:rgba(245,158,11,0.08); color:#F59E0B; }
-    .scout-filter-pill.status-de.on     { border-color:rgba(91,139,247,0.5); background:rgba(91,139,247,0.08); color:#5B8BF7; }
-    .scout-filter-pill.status-dnd.on    { border-color:rgba(86,88,120,0.5);  background:rgba(86,88,120,0.08);  color:var(--muted); }
+    .scout-filter-pill.status-signed.on { border-color:rgba(52,211,153,0.5);  background:rgba(52,211,153,0.08);  color:#34D399; }
+    .scout-filter-pill.status-fa.on     { border-color:rgba(45,212,191,0.5);  background:rgba(45,212,191,0.08);  color:#2DD4BF; }
+    .scout-filter-pill.status-rfa.on    { border-color:rgba(245,158,11,0.5);  background:rgba(245,158,11,0.08);  color:#F59E0B; }
+    .scout-filter-pill.status-de.on     { border-color:rgba(91,139,247,0.5);  background:rgba(91,139,247,0.08);  color:#5B8BF7; }
+    .scout-filter-pill.status-dnd.on    { border-color:rgba(86,88,120,0.5);   background:rgba(86,88,120,0.08);   color:var(--muted); }
+
+    /* ─── SCOUT SESSION BUTTON ──────────────────────────────── */
+    .scout-session-btn {
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--dark3);
+      color: var(--muted);
+      font-size: 10px;
+      font-family: 'DM Mono', monospace;
+      cursor: pointer;
+      letter-spacing: .04em;
+      transition: border-color 150ms var(--ease-out), color 150ms var(--ease-out), background 150ms var(--ease-out);
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .scout-session-btn:hover { border-color: var(--border2); color: var(--text); }
+    }
+    .scout-session-btn.on {
+      border-color: rgba(45,212,191,0.5);
+      background: rgba(45,212,191,0.08);
+      color: #2DD4BF;
+    }
     @media (hover: hover) and (pointer: fine) { .scout-filter-pill:hover { border-color: var(--border2); color: var(--text); } }
 
     /* Font size zoom */
-    .main-content { zoom: var(--content-zoom, 1); }
-    .font-size-toggle { display: flex; gap: 3px; }
-    .font-size-btn {
-      padding: 4px 10px; border-radius: 4px;
-      border: 1px solid var(--border); background: var(--dark3);
-      color: var(--muted); font-family: 'DM Mono', monospace;
-      cursor: pointer; transition: color 150ms, border-color 150ms, background 150ms;
+    .main-content {
+      zoom: var(--content-zoom, 1);
+      transition: zoom 220ms var(--ease-out);
     }
-    .font-size-btn.on { border-color: rgba(91,139,247,0.45); background: rgba(91,139,247,0.10); color: var(--red); }
-    @media (hover: hover) and (pointer: fine) { .font-size-btn:hover { border-color: var(--border2); color: var(--text); } }
+
+    /* ─── TEXT SIZE SLIDER ──────────────────────────────────── */
+    .text-size-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      max-width: 280px;
+      margin-left: auto;
+    }
+
+    .size-icon {
+      font-family: 'Space Grotesk', sans-serif;
+      color: var(--muted);
+      flex-shrink: 0;
+      user-select: none;
+      line-height: 1;
+    }
+    .size-icon.sm { font-size: 11px; }
+    .size-icon.lg { font-size: 17px; }
+
+    .size-range-wrap {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      height: 20px;
+    }
+
+    .size-range {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 4px;
+      border-radius: 2px;
+      background: transparent;
+      outline: none;
+      cursor: pointer;
+      position: relative;
+      z-index: 1;
+    }
+
+    .size-range::-webkit-slider-runnable-track {
+      height: 4px;
+      border-radius: 2px;
+      background: var(--dark4);
+      border: 1px solid var(--border);
+    }
+
+    .size-range::-moz-range-track {
+      height: 4px;
+      border-radius: 2px;
+      background: var(--dark4);
+      border: 1px solid var(--border);
+    }
+
+    .size-range::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--red);
+      border: 2px solid var(--dark);
+      box-shadow: 0 0 0 1px var(--red), 0 2px 8px rgba(91,139,247,0.4);
+      cursor: grab;
+      transition: box-shadow 180ms var(--ease-out), transform 180ms var(--ease-out);
+      margin-top: -6px;
+    }
+
+    .size-range::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--red);
+      border: 2px solid var(--dark);
+      box-shadow: 0 0 0 1px var(--red), 0 2px 8px rgba(91,139,247,0.4);
+      cursor: grab;
+      transition: box-shadow 180ms var(--ease-out), transform 180ms var(--ease-out);
+    }
+
+    .size-range:active::-webkit-slider-thumb {
+      cursor: grabbing;
+      transform: scale(1.2);
+      box-shadow: 0 0 0 1px var(--red), 0 4px 16px rgba(91,139,247,0.55);
+    }
+
+    .size-range:active::-moz-range-thumb {
+      cursor: grabbing;
+      transform: scale(1.2);
+    }
+
+    /* filled track (left of thumb) rendered via JS background gradient */
+    .size-range-fill {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 4px;
+      border-radius: 2px;
+      background: var(--red);
+      pointer-events: none;
+      transition: width 100ms linear;
+    }
+
+    .size-val {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--red);
+      min-width: 32px;
+      text-align: right;
+      flex-shrink: 0;
+      transition: transform 140ms var(--ease-out), opacity 140ms var(--ease-out);
+    }
+
+    .size-val.pop {
+      animation: sizePop 200ms var(--ease-out) both;
+    }
+
+    @keyframes sizePop {
+      0%   { transform: scale(1); }
+      40%  { transform: scale(1.25); }
+      100% { transform: scale(1); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .size-val.pop { animation: none; }
+      .main-content { transition: none; }
+    }
 
     .scout-tier-tabs {
       display: flex;
